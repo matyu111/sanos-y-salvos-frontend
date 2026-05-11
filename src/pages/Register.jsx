@@ -24,50 +24,70 @@ function Register() {
     return <Navigate to="/dashboard" replace />;
   }
 
+  const validarCampo = (name, value, formularioActualizado) => {
+    switch (name) {
+      case "nombre":
+        if (!value.trim()) return "El nombre es obligatorio.";
+        if (value.trim().length < 3) return "El nombre debe tener al menos 3 caracteres.";
+        return "";
+
+      case "email":
+        if (!value.trim()) return "El correo es obligatorio.";
+        if (!/\S+@\S+\.\S+/.test(value)) return "Ingresa un correo válido.";
+        return "";
+
+      case "password":
+        if (!value) return "La contraseña es obligatoria.";
+        if (value.length < 6) return "La contraseña debe tener al menos 6 caracteres.";
+        return "";
+
+      case "confirmarPassword":
+        if (!value) return "Confirma tu contraseña.";
+        if (value !== formularioActualizado.password) return "Las contraseñas no coinciden.";
+        return "";
+
+      case "rol":
+        if (!value) return "Selecciona un rol.";
+        return "";
+
+      default:
+        return "";
+    }
+  };
+
   const handleChange = (event) => {
     const { name, value } = event.target;
 
-    setFormulario({
+    const formularioActualizado = {
       ...formulario,
       [name]: value,
-    });
+    };
 
-    setErrores({
+    const nuevosErrores = {
       ...errores,
-      [name]: "",
-    });
+      [name]: validarCampo(name, value, formularioActualizado),
+    };
 
+    if (name === "password" && formulario.confirmarPassword) {
+      nuevosErrores.confirmarPassword = validarCampo(
+        "confirmarPassword",
+        formulario.confirmarPassword,
+        formularioActualizado
+      );
+    }
+
+    setFormulario(formularioActualizado);
+    setErrores(nuevosErrores);
     setMensaje("");
   };
 
   const validarFormulario = () => {
     const nuevosErrores = {};
 
-    if (!formulario.nombre.trim()) {
-      nuevosErrores.nombre = "El nombre es obligatorio.";
-    }
-
-    if (!formulario.email.trim()) {
-      nuevosErrores.email = "El correo es obligatorio.";
-    } else if (!/\S+@\S+\.\S+/.test(formulario.email)) {
-      nuevosErrores.email = "Ingresa un correo válido.";
-    }
-
-    if (!formulario.password) {
-      nuevosErrores.password = "La contraseña es obligatoria.";
-    } else if (formulario.password.length < 6) {
-      nuevosErrores.password = "La contraseña debe tener al menos 6 caracteres.";
-    }
-
-    if (!formulario.confirmarPassword) {
-      nuevosErrores.confirmarPassword = "Confirma tu contraseña.";
-    } else if (formulario.password !== formulario.confirmarPassword) {
-      nuevosErrores.confirmarPassword = "Las contraseñas no coinciden.";
-    }
-
-    if (!formulario.rol) {
-      nuevosErrores.rol = "Selecciona un rol.";
-    }
+    Object.keys(formulario).forEach((campo) => {
+      const error = validarCampo(campo, formulario[campo], formulario);
+      if (error) nuevosErrores[campo] = error;
+    });
 
     setErrores(nuevosErrores);
 
