@@ -1,4 +1,9 @@
 import { useNavigate } from "react-router-dom";
+
+import AdminPanel from "../components/roles/AdminPanel";
+import ClinicaPanel from "../components/roles/ClinicaPanel";
+import RefugioPanel from "../components/roles/RefugioPanel";
+import UsuarioPanel from "../components/roles/UsuarioPanel";
 import "../styles/dashboard.css";
 
 function Dashboard() {
@@ -56,6 +61,17 @@ function Dashboard() {
             </p>
           </article>
         </div>
+
+        <section className="roles-section">
+          <h2>Componentes por perfil</h2>
+
+          <div className="roles-grid">
+            <AdminPanel />
+            <UsuarioPanel />
+            <RefugioPanel />
+            <ClinicaPanel />
+          </div>
+        </section>
       </section>
     </main>
   );
