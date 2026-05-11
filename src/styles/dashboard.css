@@ -108,3 +108,47 @@
     grid-template-columns: 1fr;
   }
 }
+.roles-section {
+  margin-top: 30px;
+}
+
+.roles-section h2 {
+  color: #c94f7c;
+  margin-bottom: 16px;
+}
+
+.roles-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.role-card {
+  padding: 22px;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 14px 35px rgba(180, 90, 120, 0.1);
+}
+
+.role-card h3 {
+  margin: 0 0 10px;
+  color: #c94f7c;
+}
+
+.role-card p {
+  margin: 0;
+  color: #666666;
+  line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+  .roles-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .roles-grid {
+    grid-template-columns: 1fr;
+  }
+}
