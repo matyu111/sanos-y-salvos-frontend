@@ -106,3 +106,35 @@
 .auth-link a:hover {
   text-decoration: underline;
 }
+
+.auth-card-large {
+  max-width: 520px;
+}
+
+.form-group select {
+  padding: 13px 14px;
+  border: 1px solid #f0bfd0;
+  border-radius: 14px;
+  font-size: 15px;
+  outline: none;
+  background: #ffffff;
+}
+
+.form-group select:focus {
+  border-color: #c94f7c;
+  box-shadow: 0 0 0 3px rgba(201, 79, 124, 0.12);
+}
+
+.input-error {
+  color: #b42318;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.auth-message {
+  padding: 12px;
+  border-radius: 12px;
+  background: #eefaf1;
+  color: #267a3e;
+  font-size: 14px;
+}
