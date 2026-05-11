@@ -33,7 +33,22 @@ function Register() {
 
       case "email":
         if (!value.trim()) return "El correo es obligatorio.";
-        if (!/\S+@\S+\.\S+/.test(value)) return "Ingresa un correo válido.";
+
+        const dominiosPermitidos = [
+          "@duocuc.cl",
+          "@profesorduoc.cl",
+          "@gmail.com",
+          "@hotmail.com",
+        ];
+
+        const correoValido = dominiosPermitidos.some((dominio) =>
+          value.toLowerCase().endsWith(dominio)
+        );
+
+        if (!correoValido) {
+          return "Solo se permiten correos institucionales o autorizados.";
+        }
+
         return "";
 
       case "password":
