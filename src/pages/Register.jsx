@@ -13,7 +13,6 @@ function Register() {
     email: "",
     password: "",
     confirmarPassword: "",
-    rol: "USUARIO",
   });
 
   const [errores, setErrores] = useState({});
@@ -34,35 +33,31 @@ function Register() {
       case "email":
         if (!value.trim()) return "El correo es obligatorio.";
 
-        const dominiosPermitidos = [
-          "@duocuc.cl",
-          "@profesorduoc.cl",
-          "@gmail.com",
-          "@hotmail.com",
-        ];
+        const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        const correoValido = dominiosPermitidos.some((dominio) =>
-          value.toLowerCase().endsWith(dominio)
-        );
-
-        if (!correoValido) {
-          return "Solo se permiten correos institucionales o autorizados.";
+        if (!emailValido.test(value)) {
+          return "Ingresa un correo válido.";
         }
 
         return "";
 
       case "password":
         if (!value) return "La contraseña es obligatoria.";
-        if (value.length < 6) return "La contraseña debe tener al menos 6 caracteres.";
+        if (value.length < 8) return "La contraseña debe tener al menos 8 caracteres.";
+
+        if (!/[A-Z]/.test(value)) {
+          return "La contraseña debe incluir al menos una letra mayúscula.";
+        }
+
+        if (!/\d/.test(value)) {
+          return "La contraseña debe incluir al menos un número.";
+        }
+
         return "";
 
       case "confirmarPassword":
         if (!value) return "Confirma tu contraseña.";
         if (value !== formularioActualizado.password) return "Las contraseñas no coinciden.";
-        return "";
-
-      case "rol":
-        if (!value) return "Selecciona un rol.";
         return "";
 
       default:
@@ -124,7 +119,6 @@ function Register() {
         nombre: formulario.nombre,
         email: formulario.email,
         password: formulario.password,
-        rol: formulario.rol,
       };
 
       await registrarUsuario(datosRegistro);
@@ -181,7 +175,7 @@ function Register() {
               id="password"
               name="password"
               type="password"
-              placeholder="Mínimo 6 caracteres"
+              placeholder="Mínimo 8 caracteres, una mayúscula y un número"
               value={formulario.password}
               onChange={handleChange}
             />
@@ -201,22 +195,6 @@ function Register() {
             {errores.confirmarPassword && (
               <span className="input-error">{errores.confirmarPassword}</span>
             )}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="rol">Perfil</label>
-            <select
-              id="rol"
-              name="rol"
-              value={formulario.rol}
-              onChange={handleChange}
-            >
-              <option value="USUARIO">Usuario</option>
-              <option value="REFUGIO">Refugio</option>
-              <option value="CLINICA">Clínica veterinaria</option>
-              <option value="ADMIN">Administrador</option>
-            </select>
-            {errores.rol && <span className="input-error">{errores.rol}</span>}
           </div>
 
           {mensaje && <p className="auth-message">{mensaje}</p>}
