@@ -1,9 +1,11 @@
 import { Navigate } from "react-router-dom";
 
-function ProtectedRoute({ children }) {
-  const token = localStorage.getItem("token");
+import { useAuth } from "../hooks/useAuth";
 
-  if (!token) {
+function ProtectedRoute({ children }) {
+  const auth = useAuth();
+
+  if (!auth.isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 

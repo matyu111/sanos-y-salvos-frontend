@@ -1,4 +1,5 @@
 import Navbar from "../components/Navbar";
+import { useAuth } from "../hooks/useAuth";
 
 import AdminPanel from "../components/roles/AdminPanel";
 import ClinicaPanel from "../components/roles/ClinicaPanel";
@@ -8,6 +9,8 @@ import UsuarioPanel from "../components/roles/UsuarioPanel";
 import "../styles/dashboard.css";
 
 function Dashboard() {
+  const auth = useAuth();
+
   return (
     <main className="dashboard-page">
       <Navbar />
@@ -20,6 +23,23 @@ function Dashboard() {
             Has iniciado sesión correctamente. Esta vista representa el acceso
             protegido del sistema mediante JWT.
           </p>
+
+          <div className="dashboard-grid">
+            <article className="dashboard-card">
+              <h3>Nombre</h3>
+              <p>{auth.nombre || "Sin información"}</p>
+            </article>
+
+            <article className="dashboard-card">
+              <h3>Correo</h3>
+              <p>{auth.email || "Sin información"}</p>
+            </article>
+
+            <article className="dashboard-card">
+              <h3>Rol</h3>
+              <p>{auth.rol || "Sin información"}</p>
+            </article>
+          </div>
         </div>
 
         <div className="dashboard-grid">

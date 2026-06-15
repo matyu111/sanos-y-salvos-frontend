@@ -1,18 +1,19 @@
 import { useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 
+import { useAuth } from "../hooks/useAuth";
 import { loginUsuario } from "../services/authService";
 import "../styles/auth.css";
 
 function Login() {
   const navigate = useNavigate();
+  const auth = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
-  const token = localStorage.getItem("token");
 
-  if (token) {
+  if (auth.isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -23,7 +24,7 @@ function Login() {
 
     try {
       const data = await loginUsuario({ email, password });
-      localStorage.setItem("token", data.token);
+      auth.setSession(data);
       navigate("/dashboard");
     } catch (err) {
       setError("No se pudo iniciar sesión. Verifica tu correo y contraseña.");
