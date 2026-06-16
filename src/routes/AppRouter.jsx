@@ -16,6 +16,7 @@ function AppRouter() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/" element={<Navigate to="/inicio" replace />} />
         <Route
           path="/dashboard"
           element={
@@ -25,21 +26,18 @@ function AppRouter() {
           }
         />
         <Route
-          path="/*"
           element={
             <ProtectedRoute>
-              <AppLayout>
-                <Routes>
-                  <Route path="/" element={<Navigate to="/inicio" replace />} />
-                  <Route path="/inicio" element={<Inicio />} />
-                  <Route path="/registrar-mascota" element={<RegistrarMascota />} />
-                  <Route path="/mis-mascotas" element={<MisMascotas />} />
-                  <Route path="/coincidencias" element={<Coincidencias />} />
-                </Routes>
-              </AppLayout>
+              <AppLayout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route path="inicio" element={<Inicio />} />
+          <Route path="registrar-mascota" element={<RegistrarMascota />} />
+          <Route path="mis-mascotas" element={<MisMascotas />} />
+          <Route path="coincidencias" element={<Coincidencias />} />
+          <Route path="*" element={<Navigate to="/inicio" replace />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );
