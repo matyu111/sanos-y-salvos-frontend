@@ -160,6 +160,144 @@
   font-size: 32px;
 }
 
+.mis-mascotas-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.mis-mascotas-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.section-eyebrow {
+  color: #b9436d;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.section-description {
+  color: #666;
+  margin-top: 10px;
+  max-width: 56ch;
+  line-height: 1.6;
+}
+
+.state-card {
+  padding: 20px 24px;
+  border-radius: 16px;
+  font-weight: 600;
+}
+
+.state-card-loading {
+  background: #fff7fb;
+  color: #a94b72;
+  border: 1px solid #f1c8d8;
+}
+
+.state-card-error {
+  background: #fff2f2;
+  color: #a42c2c;
+  border: 1px solid #f2c1c1;
+}
+
+.state-card-empty {
+  background: #f9fafb;
+  color: #555;
+  border: 1px dashed #d4d8df;
+}
+
+.mascotas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.mascota-card {
+  overflow: hidden;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 10px 30px rgba(180, 90, 120, 0.12);
+  border: 1px solid rgba(201, 79, 124, 0.08);
+}
+
+.mascota-photo-wrap {
+  aspect-ratio: 4 / 3;
+  background: linear-gradient(135deg, #fff1f6, #ffe6ef);
+}
+
+.mascota-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mascota-photo-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a94b72;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.mascota-card-body {
+  padding: 20px;
+}
+
+.mascota-card-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.mascota-card-title-row h2 {
+  color: #2f2f33;
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.mascota-status {
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #fff1f6;
+  color: #b9436d;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.mascota-details {
+  display: grid;
+  gap: 14px;
+}
+
+.mascota-details dt {
+  color: #8d8d96;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.mascota-details dd {
+  color: #333;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
 .app-footer {
   background: #fff;
   padding: 24px;
@@ -199,5 +337,14 @@
 
   .page-container h1 {
     font-size: 24px;
+  }
+
+  .mis-mascotas-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .mascota-card-title-row {
+    flex-direction: column;
   }
 }
