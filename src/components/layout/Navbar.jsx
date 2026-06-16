@@ -1,4 +1,6 @@
 import { useNavigate } from "react-router-dom";
+
+import logo from "../../assets/logo.png";
 import { useAuth } from "../../hooks/useAuth";
 
 function Navbar({ onToggleSidebar }) {
@@ -16,6 +18,7 @@ function Navbar({ onToggleSidebar }) {
         ☰
       </button>
       <div className="app-navbar-brand">
+        <img className="app-navbar-logo" src={logo} alt="Logo de Sanos y Salvos" />
         <h2>Sanos y Salvos</h2>
       </div>
       <div className="app-navbar-user">

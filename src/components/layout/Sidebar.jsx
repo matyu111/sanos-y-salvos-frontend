@@ -22,6 +22,15 @@ function Sidebar({ isOpen, onClose }) {
           <Link to="/coincidencias" className="sidebar-link" onClick={onClose}>
             Coincidencias
           </Link>
+
+          <div className="sidebar-visual-actions" aria-label="Opciones visuales">
+            <button type="button" className="sidebar-link sidebar-link-button">
+              Perfil
+            </button>
+            <button type="button" className="sidebar-link sidebar-link-button">
+              Configuración
+            </button>
+          </div>
         </nav>
       </aside>
     </>
