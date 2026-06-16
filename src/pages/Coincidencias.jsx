@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../hooks/useAuth";
 import { obtenerCoincidenciasPorUsuario } from "../services/coincidenciaService";
+import { obtenerMascotas } from "../services/mascotaService";
 
 const styles = {
   page: {
@@ -119,6 +120,65 @@ const styles = {
     display: "grid",
     gap: "14px",
   },
+  compareSection: {
+    display: "grid",
+    gap: "10px",
+  },
+  compareTitle: {
+    color: "#8d8d96",
+    fontSize: "11px",
+    fontWeight: 700,
+    textTransform: "uppercase",
+    letterSpacing: "0.05em",
+  },
+  compareGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    gap: "12px",
+  },
+  petPreviewCard: {
+    borderRadius: "14px",
+    border: "1px solid #f0dde5",
+    background: "#fff8fb",
+    overflow: "hidden",
+    display: "flex",
+    flexDirection: "column",
+  },
+  petImage: {
+    width: "100%",
+    height: "140px",
+    objectFit: "cover",
+    display: "block",
+  },
+  petImagePlaceholder: {
+    width: "100%",
+    height: "140px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#8d8d96",
+    background: "linear-gradient(135deg, #fff1f6, #ffffff)",
+    fontWeight: 700,
+    fontSize: "13px",
+  },
+  petMeta: {
+    padding: "10px 12px",
+    display: "grid",
+    gap: "2px",
+  },
+  petMetaLabel: {
+    color: "#8d8d96",
+    fontSize: "11px",
+    fontWeight: 700,
+    textTransform: "uppercase",
+    letterSpacing: "0.04em",
+  },
+  petMetaName: {
+    color: "#2f2f33",
+    fontWeight: 700,
+    fontSize: "14px",
+    lineHeight: 1.3,
+  },
   details: {
     display: "grid",
     gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
@@ -148,6 +208,8 @@ const styles = {
   actions: {
     display: "flex",
     justifyContent: "flex-end",
+    gap: "10px",
+    flexWrap: "wrap",
   },
   button: {
     border: "none",
@@ -173,6 +235,42 @@ function getBadgeLabel(porcentajeCoincidencia) {
   return "Coincidencia Detectada";
 }
 
+const normalizeList = (value) => {
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  if (Array.isArray(value?.data)) {
+    return value.data;
+  }
+
+  if (Array.isArray(value?.content)) {
+    return value.content;
+  }
+
+  if (Array.isArray(value?.mascotas)) {
+    return value.mascotas;
+  }
+
+  if (Array.isArray(value?.coincidencias)) {
+    return value.coincidencias;
+  }
+
+  return [];
+};
+
+const toImageSrc = (fotoBase64) => {
+  if (!fotoBase64) {
+    return "";
+  }
+
+  if (fotoBase64.startsWith("data:image")) {
+    return fotoBase64;
+  }
+
+  return `data:image/jpeg;base64,${fotoBase64}`;
+};
+
 function Coincidencias() {
   const navigate = useNavigate();
   const { userId, isAuthenticated } = useAuth();
@@ -194,13 +292,36 @@ function Coincidencias() {
       setError("");
 
       try {
-        const data = await obtenerCoincidenciasPorUsuario(userId);
+        const [coincidenciasData, mascotasData] = await Promise.all([
+          obtenerCoincidenciasPorUsuario(userId),
+          obtenerMascotas(),
+        ]);
 
         if (!active) {
           return;
         }
 
-        setCoincidencias(Array.isArray(data) ? data : []);
+        const coincidenciasList = normalizeList(coincidenciasData);
+        const mascotasList = normalizeList(mascotasData);
+
+        const mascotasById = new Map(
+          mascotasList
+            .filter((mascota) => mascota?.id != null)
+            .map((mascota) => [Number(mascota.id), mascota])
+        );
+
+        const coincidenciasConMascotas = coincidenciasList.map((coincidencia) => {
+          const idPerdida = Number(coincidencia.idMascotaPerdida);
+          const idEncontrada = Number(coincidencia.idMascotaEncontrada);
+
+          return {
+            ...coincidencia,
+            mascotaPerdida: mascotasById.get(idPerdida) || null,
+            mascotaEncontrada: mascotasById.get(idEncontrada) || null,
+          };
+        });
+
+        setCoincidencias(coincidenciasConMascotas);
       } catch (fetchError) {
         if (!active) {
           return;
@@ -267,14 +388,70 @@ function Coincidencias() {
               </div>
 
               <div style={styles.body}>
+                <div style={styles.compareSection}>
+                  <div style={styles.compareTitle}>Comparación visual</div>
+
+                  <div style={styles.compareGrid}>
+                    <article style={styles.petPreviewCard}>
+                      {coincidencia.mascotaPerdida?.fotoBase64 ? (
+                        <img
+                          src={toImageSrc(coincidencia.mascotaPerdida.fotoBase64)}
+                          alt={`Mascota perdida ${coincidencia.mascotaPerdida.nombre || "sin nombre"}`}
+                          style={styles.petImage}
+                        />
+                      ) : (
+                        <div style={styles.petImagePlaceholder}>Sin foto</div>
+                      )}
+
+                      <div style={styles.petMeta}>
+                        <span style={styles.petMetaLabel}>Mascota perdida</span>
+                        <span style={styles.petMetaName}>
+                          {coincidencia.mascotaPerdida?.nombre ||
+                            coincidencia.nombreMascotaPerdida ||
+                            "No informada"}
+                        </span>
+                      </div>
+                    </article>
+
+                    <article style={styles.petPreviewCard}>
+                      {coincidencia.mascotaEncontrada?.fotoBase64 ? (
+                        <img
+                          src={toImageSrc(coincidencia.mascotaEncontrada.fotoBase64)}
+                          alt={`Mascota encontrada ${coincidencia.mascotaEncontrada.nombre || "sin nombre"}`}
+                          style={styles.petImage}
+                        />
+                      ) : (
+                        <div style={styles.petImagePlaceholder}>Sin foto</div>
+                      )}
+
+                      <div style={styles.petMeta}>
+                        <span style={styles.petMetaLabel}>Mascota encontrada</span>
+                        <span style={styles.petMetaName}>
+                          {coincidencia.mascotaEncontrada?.nombre ||
+                            coincidencia.nombreMascotaEncontrada ||
+                            "No informada"}
+                        </span>
+                      </div>
+                    </article>
+                  </div>
+                </div>
+
                 <div style={styles.details}>
                   <div>
                     <div style={styles.detailLabel}>Mascota perdida</div>
-                    <div style={styles.detailValue}>{coincidencia.nombreMascotaPerdida || "No informada"}</div>
+                    <div style={styles.detailValue}>
+                      {coincidencia.mascotaPerdida?.nombre ||
+                        coincidencia.nombreMascotaPerdida ||
+                        "No informada"}
+                    </div>
                   </div>
                   <div>
                     <div style={styles.detailLabel}>Mascota encontrada</div>
-                    <div style={styles.detailValue}>{coincidencia.nombreMascotaEncontrada || "No informada"}</div>
+                    <div style={styles.detailValue}>
+                      {coincidencia.mascotaEncontrada?.nombre ||
+                        coincidencia.nombreMascotaEncontrada ||
+                        "No informada"}
+                    </div>
                   </div>
                   <div>
                     <div style={styles.detailLabel}>Tipo</div>
@@ -309,6 +486,14 @@ function Coincidencias() {
                     onClick={() => navigate(`/mascota/${coincidencia.idMascotaPerdida}`)}
                   >
                     Ver Mascota Perdida
+                  </button>
+
+                  <button
+                    type="button"
+                    style={styles.button}
+                    onClick={() => navigate(`/mascota/${coincidencia.idMascotaEncontrada}`)}
+                  >
+                    Ver Mascota Encontrada
                   </button>
                 </div>
               </div>
