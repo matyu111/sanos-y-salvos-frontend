@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import MascotaCard from "../components/mapa/MascotaCard";
 import MascotasMap from "../components/mapa/MascotasMap";
@@ -52,6 +53,7 @@ function mergeMascotasConUbicaciones(mascotas, ubicaciones) {
 }
 
 function Inicio() {
+  const navigate = useNavigate();
   const [mascotas, setMascotas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -129,6 +131,10 @@ function Inicio() {
     setSelectedMascotaId(mascota.id);
   };
 
+  const handleViewDetails = (mascotaId) => {
+    navigate(`/mascota/${mascotaId}`);
+  };
+
   const renderMainContent = () => {
     if (loading) {
       return <div className="inicio-state-card">Cargando mapa y mascotas...</div>;
@@ -157,6 +163,7 @@ function Inicio() {
             mascotas={mascotas}
             selectedMascotaId={selectedMascotaId}
             onSelectMascota={handleSelectMascota}
+            onViewDetails={handleViewDetails}
           />
         </section>
 

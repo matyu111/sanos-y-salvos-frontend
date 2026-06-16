@@ -9,6 +9,7 @@ import Inicio from "../pages/Inicio";
 import RegistrarMascota from "../pages/RegistrarMascota";
 import MisMascotas from "../pages/MisMascotas";
 import Coincidencias from "../pages/Coincidencias";
+import MascotaDetalle from "../pages/MascotaDetalle";
 
 function AppRouter() {
   return (
@@ -36,6 +37,7 @@ function AppRouter() {
           <Route path="registrar-mascota" element={<RegistrarMascota />} />
           <Route path="mis-mascotas" element={<MisMascotas />} />
           <Route path="coincidencias" element={<Coincidencias />} />
+          <Route path="mascota/:id" element={<MascotaDetalle />} />
           <Route path="*" element={<Navigate to="/inicio" replace />} />
         </Route>
       </Routes>
