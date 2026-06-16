@@ -26,6 +26,14 @@ function MascotaDetalle() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [mascotas, setMascotas] = useState([]);
+  const [reportesCiudadanos, setReportesCiudadanos] = useState([]);
+  const [modalAbierto, setModalAbierto] = useState(false);
+  const [mensajeExito, setMensajeExito] = useState("");
+  const [formReporte, setFormReporte] = useState({
+    nombre: "",
+    telefono: "",
+    comentario: "",
+  });
 
   useEffect(() => {
     let active = true;
@@ -75,6 +83,38 @@ function MascotaDetalle() {
 
   const fotoSrc = mascota?.fotoBase64 ? `data:image/jpeg;base64,${mascota.fotoBase64}` : null;
 
+  const handleChangeReporte = (event) => {
+    const { name, value } = event.target;
+
+    setFormReporte((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmitReporte = (event) => {
+    event.preventDefault();
+
+    const nuevoReporte = {
+      mascotaId: Number(id),
+      nombre: formReporte.nombre.trim(),
+      telefono: formReporte.telefono.trim(),
+      comentario: formReporte.comentario.trim(),
+      creadoEn: new Date().toISOString(),
+    };
+
+    setReportesCiudadanos((prev) => [...prev, nuevoReporte]);
+    setFormReporte({
+      nombre: "",
+      telefono: "",
+      comentario: "",
+    });
+    setModalAbierto(false);
+    setMensajeExito(
+      "Reporte enviado correctamente. Un administrador revisará la información."
+    );
+  };
+
   return (
     <div className="page-container mascota-detalle-page">
       <div className="detail-topbar">
@@ -108,6 +148,12 @@ function MascotaDetalle() {
             <p className="section-eyebrow">Detalle de mascota</p>
             <h1>{mascota.nombre}</h1>
 
+            {mensajeExito ? (
+              <p className="detail-report-success" role="status" aria-live="polite">
+                {mensajeExito}
+              </p>
+            ) : null}
+
             <div className="detail-status-row">
               <span className="mascota-detail-status">{mascota.estado}</span>
             </div>
@@ -138,9 +184,99 @@ function MascotaDetalle() {
                 <dd>{mascota.dimension || "No informada"}</dd>
               </div>
             </dl>
+
+            <div className="detail-actions-row">
+              <button
+                type="button"
+                className="detail-report-button"
+                onClick={() => {
+                  setMensajeExito("");
+                  setModalAbierto(true);
+                }}
+              >
+                He visto esta mascota
+              </button>
+
+              {reportesCiudadanos.length ? (
+                <span className="detail-report-count">
+                  Reportes locales: {reportesCiudadanos.length}
+                </span>
+              ) : null}
+            </div>
           </div>
         </article>
       )}
+
+      {modalAbierto ? (
+        <div className="detail-modal-overlay" role="presentation" onClick={() => setModalAbierto(false)}>
+          <div
+            className="detail-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="detalle-modal-titulo"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="detail-modal-header">
+              <h2 id="detalle-modal-titulo">He visto esta mascota</h2>
+              <button
+                type="button"
+                className="detail-modal-close"
+                onClick={() => setModalAbierto(false)}
+                aria-label="Cerrar modal"
+              >
+                ×
+              </button>
+            </div>
+
+            <form className="detail-modal-form" onSubmit={handleSubmitReporte}>
+              <label className="detail-modal-field">
+                <span>Nombre</span>
+                <input
+                  name="nombre"
+                  type="text"
+                  value={formReporte.nombre}
+                  onChange={handleChangeReporte}
+                  placeholder="Tu nombre"
+                  required
+                />
+              </label>
+
+              <label className="detail-modal-field">
+                <span>Teléfono</span>
+                <input
+                  name="telefono"
+                  type="tel"
+                  value={formReporte.telefono}
+                  onChange={handleChangeReporte}
+                  placeholder="+56 9 1234 5678"
+                  required
+                />
+              </label>
+
+              <label className="detail-modal-field">
+                <span>Comentario</span>
+                <textarea
+                  name="comentario"
+                  value={formReporte.comentario}
+                  onChange={handleChangeReporte}
+                  placeholder="Cuéntanos dónde la viste y en qué condiciones"
+                  rows={4}
+                  required
+                />
+              </label>
+
+              <div className="detail-modal-actions">
+                <button type="button" className="detail-modal-cancel" onClick={() => setModalAbierto(false)}>
+                  Cancelar
+                </button>
+                <button type="submit" className="detail-modal-submit">
+                  Enviar reporte
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
