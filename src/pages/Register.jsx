@@ -22,7 +22,7 @@ function Register() {
   const [cargando, setCargando] = useState(false);
 
   if (token) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/inicio" replace />;
   }
 
   const validarCampo = (name, value, formularioActualizado) => {
