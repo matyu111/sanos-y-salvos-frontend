@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 
+import logo from "../assets/logo.png";
 import { useAuth } from "../hooks/useAuth";
 import { loginUsuario } from "../services/authService";
 import "../styles/auth.css";
@@ -26,7 +27,7 @@ function Login() {
       const data = await loginUsuario({ email, password });
       auth.setSession(data);
       navigate("/dashboard");
-    } catch (err) {
+    } catch {
       setError("No se pudo iniciar sesión. Verifica tu correo y contraseña.");
     } finally {
       setCargando(false);
@@ -37,6 +38,7 @@ function Login() {
     <main className="auth-page">
       <section className="auth-card">
         <div className="auth-header">
+          <img className="auth-logo" src={logo} alt="Logo de Sanos y Salvos" />
           <h1>Sanos y Salvos</h1>
           <p>Inicia sesión para acceder a la plataforma.</p>
         </div>
@@ -65,6 +67,8 @@ function Login() {
               required
             />
           </div>
+
+          <p className="auth-help-text">¿Olvidaste tu contraseña?</p>
 
           {error && <p className="auth-error">{error}</p>}
 

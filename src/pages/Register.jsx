@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 
+import logo from "../assets/logo.png";
 import { registrarUsuario } from "../services/authService";
 import "../styles/auth.css";
 
@@ -17,6 +18,7 @@ function Register() {
 
   const [errores, setErrores] = useState({});
   const [mensaje, setMensaje] = useState("");
+  const [tipoMensaje, setTipoMensaje] = useState("");
   const [cargando, setCargando] = useState(false);
 
   if (token) {
@@ -30,7 +32,7 @@ function Register() {
         if (value.trim().length < 3) return "El nombre debe tener al menos 3 caracteres.";
         return "";
 
-      case "email":
+      case "email": {
         if (!value.trim()) return "El correo es obligatorio.";
 
         const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -40,6 +42,7 @@ function Register() {
         }
 
         return "";
+      }
 
       case "password":
         if (!value) return "La contraseña es obligatoria.";
@@ -89,6 +92,7 @@ function Register() {
     setFormulario(formularioActualizado);
     setErrores(nuevosErrores);
     setMensaje("");
+    setTipoMensaje("");
   };
 
   const validarFormulario = () => {
@@ -107,6 +111,7 @@ function Register() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setMensaje("");
+    setTipoMensaje("");
 
     if (!validarFormulario()) {
       return;
@@ -124,11 +129,13 @@ function Register() {
       await registrarUsuario(datosRegistro);
 
       setMensaje("Usuario registrado correctamente. Ahora puedes iniciar sesión.");
+      setTipoMensaje("success");
       setTimeout(() => {
         navigate("/login");
       }, 1200);
-    } catch (error) {
+    } catch {
       setMensaje("No se pudo registrar el usuario. Revisa los datos o intenta con otro correo.");
+      setTipoMensaje("error");
     } finally {
       setCargando(false);
     }
@@ -138,6 +145,7 @@ function Register() {
     <main className="auth-page">
       <section className="auth-card auth-card-large">
         <div className="auth-header">
+          <img className="auth-logo" src={logo} alt="Logo de Sanos y Salvos" />
           <h1>Crear cuenta</h1>
           <p>Regístrate para acceder a Sanos y Salvos.</p>
         </div>
@@ -197,7 +205,11 @@ function Register() {
             )}
           </div>
 
-          {mensaje && <p className="auth-message">{mensaje}</p>}
+          {mensaje && (
+            <p className={`auth-message ${tipoMensaje === "error" ? "auth-message-error" : "auth-message-success"}`}>
+              {mensaje}
+            </p>
+          )}
 
           <button className="auth-button" type="submit" disabled={cargando}>
             {cargando ? "Registrando..." : "Crear cuenta"}
