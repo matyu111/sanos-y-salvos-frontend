@@ -1,5 +1,10 @@
 import axiosConfig from "../api/axiosConfig";
 
+export const obtenerMascotas = async () => {
+  const response = await axiosConfig.get("/bff/mascotas");
+  return response.data;
+};
+
 export const crearMascota = async (mascotaData) => {
   const response = await axiosConfig.post("/bff/mascotas", mascotaData);
   return response.data;
