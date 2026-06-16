@@ -44,7 +44,7 @@ function MapSelectionController({ selectedMascota, markerRefs }) {
   return null;
 }
 
-function MascotasMap({ mascotas, selectedMascotaId, onSelectMascota }) {
+function MascotasMap({ mascotas, selectedMascotaId, onSelectMascota, onViewDetails }) {
   const markerRefs = useRef({});
 
   const mascotasConUbicacion = useMemo(
@@ -100,6 +100,29 @@ function MascotasMap({ mascotas, selectedMascotaId, onSelectMascota }) {
               <div className="map-popup-content">
                 <h3>{mascota.nombre}</h3>
                 <span>{mascota.estado}</span>
+
+                <dl className="map-popup-details">
+                  <div>
+                    <dt>Raza</dt>
+                    <dd>{mascota.raza || "No informada"}</dd>
+                  </div>
+                  <div>
+                    <dt>Color</dt>
+                    <dd>{mascota.color || "No informado"}</dd>
+                  </div>
+                  <div>
+                    <dt>Fecha reporte</dt>
+                    <dd>{mascota.fechaReporte || "Sin fecha"}</dd>
+                  </div>
+                </dl>
+
+                <button
+                  type="button"
+                  className="map-popup-button"
+                  onClick={() => onViewDetails?.(mascota.id)}
+                >
+                  Ver Detalles
+                </button>
               </div>
             </div>
           </Popup>
