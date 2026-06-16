@@ -1,3 +1,4 @@
+import { Outlet } from "react-router-dom";
 import { useState } from "react";
 import Navbar from "../components/layout/Navbar";
 import Sidebar from "../components/layout/Sidebar";
@@ -20,7 +21,7 @@ function AppLayout({ children }) {
       <Navbar onToggleSidebar={toggleSidebar} />
       <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
       <main className="app-content">
-        {children}
+        {children ?? <Outlet />}
       </main>
       <Footer />
     </div>
