@@ -141,6 +141,46 @@
   line-height: 1.5;
 }
 
+.address-search-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: end;
+}
+
+.address-search-field {
+  min-width: 0;
+}
+
+.address-search-button {
+  border: none;
+  border-radius: 14px;
+  padding: 14px 18px;
+  background: #fff1f6;
+  color: #b9436d;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.address-search-button:hover:not(:disabled) {
+  background: #ffe5ef;
+  transform: translateY(-1px);
+}
+
+.address-search-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.map-helper-text {
+  color: #666666;
+  font-size: 14px;
+  font-weight: 600;
+}
+
 .coordinates-box {
   min-width: 220px;
   padding: 12px 14px;
@@ -205,6 +245,10 @@
 
 @media (max-width: 768px) {
   .registrar-mascota-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .address-search-row {
     grid-template-columns: 1fr;
   }
 

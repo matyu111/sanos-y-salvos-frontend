@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import L from "leaflet";
 import {
   MapContainer,
   Marker,
   TileLayer,
+  useMap,
   useMapEvents,
 } from "react-leaflet";
 
@@ -23,6 +24,15 @@ const MAP_CENTER = {
   lat: -33.5111,
   lng: -70.7653,
 };
+
+const MAIPU_VALIDATION_MESSAGE =
+  "Solo es posible registrar mascotas dentro de la comuna de Maipú.";
+
+const DIMENSION_OPTIONS = [
+  { value: "PEQUENA", label: "Pequeña" },
+  { value: "MEDIANA", label: "Mediana" },
+  { value: "GRANDE", label: "Grande" },
+];
 
 const initialFormData = {
   nombre: "",
@@ -45,10 +55,76 @@ const mapMarkerIcon = L.icon({
   shadowSize: [41, 41],
 });
 
+function normalizeText(value) {
+  return String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase();
+}
+
+function locationBelongsToMaipu(locationData) {
+  const address = locationData?.address ?? {};
+  const possibleFields = [
+    address.city,
+    address.town,
+    address.village,
+    address.municipality,
+    address.suburb,
+    address.city_district,
+    address.county,
+    address.state_district,
+    locationData?.display_name,
+  ];
+
+  return possibleFields.some((field) => normalizeText(field).includes("maipu"));
+}
+
+async function reverseGeocodeLocation({ latitud, longitud }) {
+  const response = await fetch(
+    `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitud}&lon=${longitud}&zoom=18&addressdetails=1&accept-language=es`,
+    {
+      headers: {
+        Accept: "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("No se pudo validar la ubicación seleccionada.");
+  }
+
+  return response.json();
+}
+
+async function searchAddress(query) {
+  const response = await fetch(
+    `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&countrycodes=cl&accept-language=es&q=${encodeURIComponent(
+      `${query}, Maipú, Chile`
+    )}`,
+    {
+      headers: {
+        Accept: "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("No se pudo buscar la dirección ingresada.");
+  }
+
+  const data = await response.json();
+  return Array.isArray(data) ? data : [];
+}
+
+function buildLocationDescription(locationData, fallbackLabel = "") {
+  return locationData?.display_name || fallbackLabel || "";
+}
+
 function LocationPicker({ selectedLocation, onSelectLocation }) {
   useMapEvents({
     click(event) {
-      onSelectLocation({
+      void onSelectLocation({
         latitud: Number(event.latlng.lat.toFixed(6)),
         longitud: Number(event.latlng.lng.toFixed(6)),
       });
@@ -65,6 +141,23 @@ function LocationPicker({ selectedLocation, onSelectLocation }) {
       icon={mapMarkerIcon}
     />
   );
+}
+
+function MapViewportController({ selectedLocation }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!selectedLocation) {
+      return;
+    }
+
+    map.flyTo([selectedLocation.latitud, selectedLocation.longitud], 16, {
+      animate: true,
+      duration: 0.8,
+    });
+  }, [map, selectedLocation]);
+
+  return null;
 }
 
 const obtenerMascotaId = (responseData) => {
@@ -111,8 +204,12 @@ function RegistrarMascota() {
   const auth = useAuth();
   const [formData, setFormData] = useState(initialFormData);
   const [previewImage, setPreviewImage] = useState("");
+  const [addressQuery, setAddressQuery] = useState("");
   const [selectedLocation, setSelectedLocation] = useState(null);
+  const [selectedLocationLabel, setSelectedLocationLabel] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSearchingAddress, setIsSearchingAddress] = useState(false);
+  const [isValidatingLocation, setIsValidatingLocation] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [imageInputKey, setImageInputKey] = useState(0);
@@ -170,8 +267,89 @@ function RegistrarMascota() {
   const resetForm = () => {
     setFormData(initialFormData);
     setPreviewImage("");
+    setAddressQuery("");
     setSelectedLocation(null);
+    setSelectedLocationLabel("");
     setImageInputKey((prevKey) => prevKey + 1);
+  };
+
+  const validateAndSetLocation = async (location, locationData, fallbackLabel = "") => {
+    setIsValidatingLocation(true);
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    try {
+      const resolvedLocationData = locationData ?? (await reverseGeocodeLocation(location));
+
+      if (!locationBelongsToMaipu(resolvedLocationData)) {
+        setErrorMessage(MAIPU_VALIDATION_MESSAGE);
+        return false;
+      }
+
+      setSelectedLocation(location);
+      setSelectedLocationLabel(buildLocationDescription(resolvedLocationData, fallbackLabel));
+      return true;
+    } catch (validationError) {
+      setErrorMessage(
+        validationError.message || "No se pudo validar la ubicación seleccionada."
+      );
+      return false;
+    } finally {
+      setIsValidatingLocation(false);
+    }
+  };
+
+  const handleMapLocationSelect = async (location) => {
+    await validateAndSetLocation(location);
+  };
+
+  const handleAddressSearch = async () => {
+    const query = addressQuery.trim();
+
+    if (!query) {
+      setErrorMessage("Ingresa una dirección para buscar la ubicación.");
+      setSuccessMessage("");
+      return;
+    }
+
+    setIsSearchingAddress(true);
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    try {
+      const results = await searchAddress(query);
+
+      if (!results.length) {
+        setErrorMessage("No se encontró una ubicación para la dirección ingresada.");
+        return;
+      }
+
+      const validResult = results.find((result) => locationBelongsToMaipu(result));
+
+      if (!validResult) {
+        setErrorMessage(MAIPU_VALIDATION_MESSAGE);
+        return;
+      }
+
+      const location = {
+        latitud: Number(Number(validResult.lat).toFixed(6)),
+        longitud: Number(Number(validResult.lon).toFixed(6)),
+      };
+
+      const locationWasSelected = await validateAndSetLocation(
+        location,
+        validResult,
+        query
+      );
+
+      if (locationWasSelected) {
+        setAddressQuery(query);
+      }
+    } catch (searchError) {
+      setErrorMessage(searchError.message || "No se pudo buscar la dirección ingresada.");
+    } finally {
+      setIsSearchingAddress(false);
+    }
   };
 
   const handleSubmit = async (event) => {
@@ -246,14 +424,6 @@ function RegistrarMascota() {
           </div>
         </div>
 
-        {errorMessage ? (
-          <div className="form-alert form-alert-error">{errorMessage}</div>
-        ) : null}
-
-        {successMessage ? (
-          <div className="form-alert form-alert-success">{successMessage}</div>
-        ) : null}
-
         <form className="registrar-mascota-form" onSubmit={handleSubmit}>
           <div className="registrar-mascota-grid">
             <label className="form-field">
@@ -313,15 +483,17 @@ function RegistrarMascota() {
             </label>
 
             <label className="form-field">
-              <span>Dimension</span>
+              <span>Dimensión</span>
               <select
                 name="dimension"
                 value={formData.dimension}
                 onChange={handleChange}
               >
-                <option value="PEQUENA">PEQUENA</option>
-                <option value="MEDIANA">MEDIANA</option>
-                <option value="GRANDE">GRANDE</option>
+                {DIMENSION_OPTIONS.map((dimensionOption) => (
+                  <option key={dimensionOption.value} value={dimensionOption.value}>
+                    {dimensionOption.label}
+                  </option>
+                ))}
               </select>
             </label>
 
@@ -367,8 +539,10 @@ function RegistrarMascota() {
             <div className="map-card">
               <div className="map-card-header">
                 <div>
-                  <h2>Ubicacion *</h2>
-                  <p>Haz clic en el mapa para seleccionar la ubicacion.</p>
+                  <h2>Ubicación *</h2>
+                  <p>
+                    Busca una dirección o haz clic en el mapa para seleccionar la ubicación.
+                  </p>
                 </div>
                 <div className="coordinates-box">
                   <span>
@@ -379,8 +553,36 @@ function RegistrarMascota() {
                     Longitud:{" "}
                     {selectedLocation ? selectedLocation.longitud : "No definida"}
                   </span>
+                  <span>
+                    Referencia: {selectedLocationLabel || "No definida"}
+                  </span>
                 </div>
               </div>
+
+              <div className="address-search-row">
+                <label className="form-field address-search-field">
+                  <span>Dirección en Maipú</span>
+                  <input
+                    type="text"
+                    value={addressQuery}
+                    onChange={(event) => setAddressQuery(event.target.value)}
+                    placeholder="Ej: Avenida Pajaritos 1234"
+                  />
+                </label>
+
+                <button
+                  type="button"
+                  className="address-search-button"
+                  onClick={handleAddressSearch}
+                  disabled={isSearchingAddress || isValidatingLocation}
+                >
+                  {isSearchingAddress ? "Buscando..." : "Buscar dirección"}
+                </button>
+              </div>
+
+              {isValidatingLocation ? (
+                <p className="map-helper-text">Validando que la ubicación pertenezca a Maipú...</p>
+              ) : null}
 
               <MapContainer
                 center={[MAP_CENTER.lat, MAP_CENTER.lng]}
@@ -392,13 +594,22 @@ function RegistrarMascota() {
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
+                <MapViewportController selectedLocation={selectedLocation} />
                 <LocationPicker
                   selectedLocation={selectedLocation}
-                  onSelectLocation={setSelectedLocation}
+                  onSelectLocation={handleMapLocationSelect}
                 />
               </MapContainer>
             </div>
           </div>
+
+          {errorMessage ? (
+            <div className="form-alert form-alert-error">{errorMessage}</div>
+          ) : null}
+
+          {successMessage ? (
+            <div className="form-alert form-alert-success">{successMessage}</div>
+          ) : null}
 
           <div className="form-actions">
             <button type="submit" className="submit-button" disabled={isSubmitting}>
