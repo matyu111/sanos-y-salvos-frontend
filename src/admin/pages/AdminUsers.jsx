@@ -12,7 +12,6 @@ function normalizeText(value) {
 
 function toDisplayRole(value) {
   const role = normalizeText(value).toUpperCase();
-  if (!role) return "N/A";
   return role;
 }
 
@@ -85,7 +84,6 @@ function AdminUsers() {
           {rows.map((usuario, index) => {
             const key = getUserKey(usuario, index);
             const isExpanded = expandedUser === key;
-            const estado = usuario?.activo == null ? "N/A" : usuario.activo ? "Activo" : "Inactivo";
 
             return (
               <article className="admin-user-card" key={key}>
@@ -99,32 +97,21 @@ function AdminUsers() {
                     <dt>Email</dt>
                     <dd>{usuario?.email || "Sin email"}</dd>
                   </div>
-                  <div>
-                    <dt>Estado</dt>
-                    <dd>{estado}</dd>
-                  </div>
                 </dl>
 
                 <div className="admin-user-actions">
                   <button type="button" onClick={() => setExpandedUser(isExpanded ? null : key)}>
                     {isExpanded ? "Ocultar detalle" : "Ver detalle"}
                   </button>
-                  <button type="button" disabled>
-                    Desactivar
-                  </button>
-                  <button type="button" disabled>
-                    Cambiar rol
-                  </button>
                 </div>
 
                 {isExpanded && (
                   <div className="admin-user-expanded">
                     <p><strong>Detalle:</strong></p>
-                    <p>Id: {usuario?.id ?? usuario?.userId ?? "N/A"}</p>
+                    {usuario?.id != null && <p>Id: {usuario.id}</p>}
                     <p>Nombre: {usuario?.nombre || "Sin nombre"}</p>
                     <p>Email: {usuario?.email || "Sin email"}</p>
-                    <p>Rol: {toDisplayRole(usuario?.rol)}</p>
-                    <p>Estado: {estado}</p>
+                    {usuario?.rol && <p>Rol: {toDisplayRole(usuario.rol)}</p>}
                   </div>
                 )}
               </article>
