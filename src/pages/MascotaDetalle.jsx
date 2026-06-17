@@ -39,6 +39,16 @@ function getDimensionLabel(value) {
 }
 
 function getUbicacionLabel(mascota) {
+  const direccion =
+    mascota?.direccion ||
+    mascota?.ubicacion?.direccion ||
+    mascota?.ubicacion?.address ||
+    mascota?.ubicacion?.descripcion;
+
+  if (direccion) {
+    return direccion;
+  }
+
   const lat = mascota?.latitud ?? mascota?.ubicacion?.latitud;
   const lng = mascota?.longitud ?? mascota?.ubicacion?.longitud;
 
@@ -59,10 +69,13 @@ function MascotaDetalle() {
   const [modalAbierto, setModalAbierto] = useState(false);
   const [mensajeExito, setMensajeExito] = useState("");
   const [formReporte, setFormReporte] = useState({
-    nombreDueno: "",
-    correoDueno: "",
     comentario: "",
   });
+
+  const mascota = useMemo(
+    () => mascotas.find((item) => Number(item.id) === Number(id)) ?? null,
+    [id, mascotas]
+  );
 
   useEffect(() => {
     let active = true;
@@ -105,11 +118,6 @@ function MascotaDetalle() {
     };
   }, [id]);
 
-  const mascota = useMemo(
-    () => mascotas.find((item) => Number(item.id) === Number(id)) ?? null,
-    [id, mascotas]
-  );
-
   const fotoSrc = mascota?.fotoBase64 ? `data:image/jpeg;base64,${mascota.fotoBase64}` : null;
 
   const handleChangeReporte = (event) => {
@@ -126,16 +134,12 @@ function MascotaDetalle() {
 
     const nuevoReporte = {
       mascotaId: Number(id),
-      nombreDueno: formReporte.nombreDueno.trim(),
-      correoDueno: formReporte.correoDueno.trim(),
       comentario: formReporte.comentario.trim(),
       creadoEn: new Date().toISOString(),
     };
 
     setReportesCiudadanos((prev) => [...prev, nuevoReporte]);
     setFormReporte({
-      nombreDueno: "",
-      correoDueno: "",
       comentario: "",
     });
     setModalAbierto(false);
@@ -266,30 +270,6 @@ function MascotaDetalle() {
             </div>
 
             <form className="detail-modal-form" onSubmit={handleSubmitReporte}>
-              <label className="detail-modal-field">
-                <span>Nombre del dueño</span>
-                <input
-                  name="nombreDueno"
-                  type="text"
-                  value={formReporte.nombreDueno}
-                  onChange={handleChangeReporte}
-                  placeholder="Nombre del dueño"
-                  required
-                />
-              </label>
-
-              <label className="detail-modal-field">
-                <span>Correo del dueño</span>
-                <input
-                  name="correoDueno"
-                  type="email"
-                  value={formReporte.correoDueno}
-                  onChange={handleChangeReporte}
-                  placeholder="correo@ejemplo.com"
-                  required
-                />
-              </label>
-
               <label className="detail-modal-field">
                 <span>Comentario</span>
                 <textarea

@@ -847,6 +847,7 @@
   color: #333;
   font-size: 16px;
   line-height: 1.4;
+  word-break: break-word;
 }
 
 .mascota-detail-grid > div {
@@ -970,6 +971,12 @@
   font-size: 15px;
   color: #333;
   background: #fff;
+}
+
+.detail-modal-field input[readonly] {
+  background: #f8f8f8;
+  color: #666;
+  cursor: not-allowed;
 }
 
 .detail-modal-field textarea {

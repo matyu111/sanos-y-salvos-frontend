@@ -126,15 +126,20 @@ const styles = {
     display: "flex",
     flexDirection: "column",
   },
+  petMedia: {
+    padding: "12px",
+    background: "#fff",
+  },
   petImage: {
     width: "100%",
-    height: "190px",
-    objectFit: "cover",
+    height: "220px",
+    objectFit: "contain",
     display: "block",
+    background: "#fff",
   },
   petImagePlaceholder: {
     width: "100%",
-    height: "190px",
+    height: "220px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -341,15 +346,17 @@ function Coincidencias() {
 
   const renderPetPanel = (title, mascota, fallbackNombre, fallbackData) => (
     <article style={styles.petPanel}>
-      {mascota?.fotoBase64 ? (
-        <img
-          src={toImageSrc(mascota.fotoBase64)}
-          alt={`${title} ${mascota.nombre || "sin nombre"}`}
-          style={styles.petImage}
-        />
-      ) : (
-        <div style={styles.petImagePlaceholder}>Sin foto</div>
-      )}
+      <div style={styles.petMedia}>
+        {mascota?.fotoBase64 ? (
+          <img
+            src={toImageSrc(mascota.fotoBase64)}
+            alt={`${title} ${mascota.nombre || "sin nombre"}`}
+            style={styles.petImage}
+          />
+        ) : (
+          <div style={styles.petImagePlaceholder}>Sin foto</div>
+        )}
+      </div>
 
       <div style={styles.petContent}>
         <h3 style={styles.petTitle}>{title}</h3>
