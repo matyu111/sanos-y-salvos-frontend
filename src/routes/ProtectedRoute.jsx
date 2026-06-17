@@ -2,11 +2,15 @@ import { Navigate } from "react-router-dom";
 
 import { useAuth } from "../hooks/useAuth";
 
-function ProtectedRoute({ children }) {
+function ProtectedRoute({ children, allowedRoles }) {
   const auth = useAuth();
 
   if (!auth.isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (allowedRoles?.length && !allowedRoles.includes(auth.rol)) {
+    return <Navigate to="/inicio" replace />;
   }
 
   return children;
