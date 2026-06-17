@@ -1,250 +1,177 @@
-# Sanos y Salvos - Backend
+# Sanos y Salvos Frontend
 
-Backend del sistema **Sanos y Salvos**, una plataforma para registrar mascotas perdidas y encontradas, detectar coincidencias y centralizar el acceso a los microservicios mediante un BFF.
+Frontend oficial de **Sanos y Salvos**, construido con **React 19** y **Vite**, cuya responsabilidad es actuar como **capa de presentación** del sistema.  
+Este frontend consume información del ecosistema del sistema únicamente a través del **BFF (Backend For Frontend)** y se apoya en autenticación JWT para controlar el acceso por roles.
 
-## 1. Descripción del sistema backend
+## Descripción del sistema
 
-El backend está construido con una arquitectura basada en microservicios y una capa intermedia BFF (Backend for Frontend).
+Sanos y Salvos es una plataforma orientada al registro, búsqueda y gestión de mascotas, coincidencias y ubicación geográfica asociada.  
+La aplicación frontend presenta dos grandes experiencias de uso:
 
-El flujo general es:
+- **USER**: navegación pública/protegida para consultar mascotas, registrar mascotas, ver coincidencias y administrar la propia información.
+- **ADMIN**: panel de gestión con vistas de dashboard, usuarios, mascotas y coincidencias.
 
-```txt
-Frontend / Cliente
-        ↓
-BFF (capa de agregación y exposición pública)
-        ↓
-Microservicios Spring Boot
-        ↓
-MySQL
-```
+El frontend no implementa lógica de negocio de backend, ni microservicios directos, ni persistencia de datos propia. Toda interacción con datos se realiza mediante servicios HTTP hacia el BFF.
 
-El BFF expone las rutas públicas para el frontend y reenvía las solicitudes a los microservicios a través de Feign. Los microservicios conservan su lógica de negocio y seguridad de forma independiente.
+## Tecnologías
 
-## 2. Tecnologías utilizadas
-
-- Java 17
-- Spring Boot 3.5.x
-- Spring Security
-- Spring Cloud OpenFeign
+- React 19
+- Vite
+- Axios
+- React Router DOM
+- Context API
 - JWT
-- Maven
-- JPA / Hibernate
-- MySQL
-- Docker y Docker Compose
-- Lombok
+- CSS global basado en `src/styles/layout.css`
+- CSS modular adicional para autenticación y formularios específicos
 
-## 3. Arquitectura del backend
+## Arquitectura del frontend
 
-### Microservicios
+La arquitectura está organizada en capas de presentación y consumo:
 
-- **ms-usuarios**: registro, autenticación y gestión de usuarios.
-- **ms-mascotas**: CRUD y consulta de mascotas perdidas o encontradas.
-- **ms-coincidencias**: cálculo de coincidencias entre mascotas.
-- **ms-geolocalizacion**: registro y consulta de ubicaciones, cálculo de distancias y cercanía.
+- `src/pages`: pantallas principales del usuario final.
+- `src/admin`: pantallas y layout del área administrativa.
+- `src/components`: componentes reutilizables de UI.
+- `src/services`: capa de consumo HTTP hacia el BFF.
+- `src/context`: estado global de autenticación.
+- `src/styles`: estilos globales y por módulo.
 
-### BFF
+### Separación USER / ADMIN
 
-El proyecto incluye **bff-sanosysalvos**, que centraliza el acceso desde el cliente web y expone rutas bajo `/bff/**`.
+La aplicación distingue dos experiencias:
 
-### Comunicación
+- **USER**
+  - Inicio
+  - Registrar Mascota
+  - Mis Mascotas
+  - Coincidencias
+  - Detalle de mascota
 
-- Comunicación **REST** entre servicios.
-- El BFF consume los microservicios por medio de **Feign Clients**.
-- El token JWT se propaga en la cabecera `Authorization`.
+- **ADMIN**
+  - Dashboard
+  - Usuarios
+  - Mascotas
+  - Coincidencias
 
-## 4. Estructura del proyecto backend
+El acceso a cada flujo está protegido por `ProtectedRoute` y por el rol almacenado en sesión.
 
-Cada microservicio sigue una estructura similar:
+### Layout global
 
-- `controller`: expone los endpoints REST.
-- `service`: contiene la lógica de negocio.
-- `service/impl`: implementación de servicios.
-- `repository`: acceso a datos con Spring Data JPA.
-- `dto`: objetos de transferencia de datos.
-- `model`: entidades JPA.
-- `config`: configuración de seguridad, JWT, Feign o CORS según corresponda.
+La aplicación principal usa un layout global basado en:
 
-En el caso del BFF, además existen:
+- `Navbar`
+- `Sidebar`
+- `Footer`
+- `Outlet` para renderizar las páginas activas
 
-- `client`: clientes Feign hacia cada microservicio.
-- `service`: capa de delegación y agregación.
-- `controller`: exposición de rutas públicas `/bff/**`.
+El layout global controla la navegación base del usuario autenticado.
 
-## 5. Seguridad
+### AdminLayout
 
-La seguridad del backend está basada en:
+El área administrativa utiliza `AdminLayout` como contenedor interno del módulo admin.  
+Este layout agrupa el encabezado administrativo y la navegación horizontal entre secciones admin.
 
-- JWT como mecanismo de autenticación.
-- Spring Security con sesión stateless.
-- Contraseñas encriptadas con BCrypt.
-- Filtros JWT para validar el token en cada solicitud protegida.
+### BFF como única capa de consumo
+
+El frontend no consume directamente microservicios de dominio.  
+La integración HTTP se centraliza en el BFF bajo rutas `/bff/...`.
+
+### Servicios en `/services`
+
+La carpeta `src/services` concentra el acceso a datos por módulo:
+
+- autenticación
+- mascotas
+- coincidencias
+- geolocalización
+- administración
+
+## Flujo de autenticación
+
+El flujo de autenticación está basado en JWT:
+
+1. El usuario ingresa correo y contraseña.
+2. El frontend llama al endpoint de login del BFF.
+3. El BFF responde con un token y datos de sesión.
+4. El frontend guarda la sesión en `localStorage`.
+5. El token se adjunta automáticamente en las solicitudes Axios mediante interceptor.
+6. `ProtectedRoute` valida si existe sesión y si el rol permite el acceso.
+7. El usuario es redirigido según su rol:
+   - `ADMIN` -> `/admin/dashboard`
+   - `USER` -> `/inicio`
 
 ### Roles
 
-- `USUARIO`
+- `USER`
 - `ADMIN`
 
-### Rutas públicas reales
+## Estructura del proyecto
 
-- `POST /api/usuarios`
-- `POST /api/usuarios/login`
-- `POST /api/auth/login`
+- `src/pages`
+  - Vistas del flujo de usuario
+- `src/admin`
+  - Vistas, layout y páginas del flujo administrativo
+- `src/components`
+  - Componentes reutilizables de interfaz
+- `src/services`
+  - Servicios HTTP hacia el BFF
+- `src/context`
+  - Contexto global de autenticación
+- `src/styles`
+  - Estilos globales y por módulo
 
-El resto de endpoints REST del backend están protegidos y requieren token JWT en `Authorization: Bearer <token>`.
+## Módulos del sistema
 
-## 6. Endpoints del sistema
+### USUARIOS
 
-### 6.1 Usuarios - BFF
+Funcionalidades relacionadas con autenticación y gestión base de usuarios.
 
-Base: `/bff/usuarios`
+- Login
+- Registro
+- Listado de usuarios
+- Información de sesión
 
-| Método | URL | Descripción | Seguridad |
-|---|---|---|---|
-| POST | `/bff/usuarios/login` | Inicia sesión y retorna JWT | Público |
-| GET | `/bff/usuarios` | Lista usuarios | Bearer JWT |
-| GET | `/bff/usuarios/{id}` | Busca usuario por id | Bearer JWT |
-| POST | `/bff/usuarios` | Crea usuario | Público |
+### MASCOTAS
 
-### 6.2 Mascotas - BFF
+Funcionalidades para registrar, consultar, editar y eliminar mascotas.
 
-Base: `/bff/mascotas`
+- Registro de mascota
+- Mis Mascotas
+- Detalle de mascota
+- Administración de mascotas
 
-| Método | URL | Descripción | Seguridad |
-|---|---|---|---|
-| POST | `/bff/mascotas` | Crea mascota | Bearer JWT |
-| GET | `/bff/mascotas` | Lista mascotas | Bearer JWT |
-| GET | `/bff/mascotas/{id}` | Busca mascota por id | Bearer JWT |
-| GET | `/bff/mascotas/usuario/{usuarioId}` | Lista mascotas por usuario | Bearer JWT |
-| GET | `/bff/mascotas/estado/{estado}` | Lista mascotas por estado | Bearer JWT |
-| PUT | `/bff/mascotas/{id}` | Actualiza mascota | Bearer JWT |
-| DELETE | `/bff/mascotas/{id}` | Elimina mascota | Bearer JWT |
+### COINCIDENCIAS
 
-### 6.3 Coincidencias - BFF
+Gestión de coincidencias entre mascotas reportadas y encontradas.
 
-Base: `/bff/coincidencias`
+- Vista de coincidencias del usuario
+- Vista administrativa de coincidencias
 
-| Método | URL | Descripción | Seguridad |
-|---|---|---|---|
-| GET | `/bff/coincidencias` | Busca coincidencias globales | Bearer JWT |
-| GET | `/bff/coincidencias/usuario/{usuarioId}` | Busca coincidencias por usuario | Bearer JWT |
+### GEOLOCALIZACIÓN
 
-### 6.4 Geolocalización - BFF
+Módulo de ubicación usado para registrar coordenadas asociadas a mascotas.
 
-Base: `/bff/geolocalizacion`
+- Selección de mapa
+- Búsqueda de dirección
+- Validación geográfica
+- Persistencia de coordenadas mediante BFF
 
-| Método | URL | Descripción | Seguridad |
-|---|---|---|---|
-| POST | `/bff/geolocalizacion` | Guarda ubicación | Bearer JWT |
-| GET | `/bff/geolocalizacion` | Lista ubicaciones | Bearer JWT |
-| GET | `/bff/geolocalizacion/mascota/{mascotaId}` | Obtiene ubicación por mascota | Bearer JWT |
-| GET | `/bff/geolocalizacion/distancia` | Calcula distancia entre coordenadas | Bearer JWT |
-| GET | `/bff/geolocalizacion/cercanas` | Busca ubicaciones cercanas | Bearer JWT |
+### ADMIN
 
-### 6.5 Usuarios - microservicio
+Panel de administración con vistas de control central:
 
-Base: `/api/usuarios`
+- Dashboard
+- Usuarios
+- Mascotas
+- Coincidencias
 
-| Método | URL | Descripción | Seguridad |
-|---|---|---|---|
-| POST | `/api/usuarios` | Registra usuario | Público |
-| POST | `/api/usuarios/login` | Login con token JWT | Público |
-| GET | `/api/usuarios` | Lista usuarios | Bearer JWT |
-| GET | `/api/usuarios/{id}` | Busca usuario por id | Bearer JWT |
-| DELETE | `/api/usuarios/{id}` | Elimina usuario | Bearer JWT |
+## Consumo de API (BFF)
 
-Además existe autenticación alternativa en:
+> Base URL actual detectada en el frontend: `http://localhost:8080`
 
-| Método | URL | Descripción |
-|---|---|---|
-| POST | `/api/auth/login` | Login alternativo con validación de contraseña |
+### Headers globales
 
-### 6.6 Mascotas - microservicio
+Todas las peticiones autenticadas usan:
 
-Base: `/api/mascotas`
-
-| Método | URL | Descripción | Seguridad |
-|---|---|---|---|
-| POST | `/api/mascotas` | Crea mascota | Bearer JWT |
-| GET | `/api/mascotas` | Lista mascotas | Bearer JWT |
-| GET | `/api/mascotas/{id}` | Busca mascota por id | Bearer JWT |
-| GET | `/api/mascotas/estado/{estado}` | Lista por estado | Bearer JWT |
-| GET | `/api/mascotas/usuario/{usuarioId}` | Lista por usuario | Bearer JWT |
-| PUT | `/api/mascotas/{id}` | Actualiza mascota | Bearer JWT |
-| DELETE | `/api/mascotas/{id}` | Elimina mascota | Bearer JWT |
-
-### 6.7 Coincidencias - microservicio
-
-Base: `/api/coincidencias`
-
-| Método | URL | Descripción | Seguridad |
-|---|---|---|---|
-| GET | `/api/coincidencias` | Calcula coincidencias | Bearer JWT |
-| GET | `/api/coincidencias/usuario/{usuarioId}` | Coincidencias filtradas por usuario | Bearer JWT |
-
-### 6.8 Geolocalización - microservicio
-
-Base: `/api/geolocalizacion`
-
-| Método | URL | Descripción | Seguridad |
-|---|---|---|---|
-| POST | `/api/geolocalizacion` | Guarda ubicación | Bearer JWT |
-| GET | `/api/geolocalizacion` | Lista ubicaciones | Bearer JWT |
-| GET | `/api/geolocalizacion/mascota/{mascotaId}` | Obtiene la última ubicación de una mascota | Bearer JWT |
-| GET | `/api/geolocalizacion/distancia` | Calcula distancia entre coordenadas | Bearer JWT |
-| GET | `/api/geolocalizacion/cercanas` | Busca ubicaciones dentro de un radio | Bearer JWT |
-
-
-## 7. Notas importantes
-
-- No se modificó la lógica de negocio para generar esta documentación.
-- No se refactorizaron controladores, servicios, DTOs ni entidades.
-- Se mantuvo la separación de responsabilidades entre BFF y microservicios.
-- La documentación refleja únicamente rutas reales detectadas en el código fuente.
-
-## 18. Estructura general del repositorio
-
-```txt
-sanos-y-salvos-backend-vargas-vargas/
-├── bff-sanosysalvos/
-├── ms-usuarios/
-├── ms-mascotas/
-├── ms-coincidencias/
-├── ms-geolocalizacion/
-├── docker-compose.yml
-└── swagger.yaml
-```
-
-## 9. Ejecución
-
-Cada microservicio puede ejecutarse de forma independiente con Maven.
-
-Orden sugerido de arranque:
-
-1. MySQL
-2. ms-usuarios
-3. ms-mascotas
-4. ms-geolocalizacion
-5. ms-coincidencias
-6. bff-sanosysalvos
-
-El BFF actúa como punto de entrada para el consumo desde el frontend.
-
-## 12. Integrantes
-
-- Matilda Vargas
-- Juan Vargas
-
-## 13. Repositorios
-
-### Backend
-
-https://github.com/juavargasc-del/Sanos-y-salvos-Backend-Vargas-Vargas-.git
-
-### Frontend
-
-https://github.com/juavargasc-del/Sanos-y-salvos-Frontend-Vargas-Vargas.git
-
-## 14. Asignatura
-
-Desarrollo Fullstack III  
-Duoc UC
+```http
+Authorization: Bearer {token}
+Content-Type: application/json
