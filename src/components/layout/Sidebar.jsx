@@ -22,6 +22,9 @@ function Sidebar({ isOpen, onClose }) {
               <Link to="/admin/users" className="sidebar-link" onClick={onClose}>
                 Usuarios
               </Link>
+              <Link to="/admin/mascotas" className="sidebar-link" onClick={onClose}>
+                Mascotas
+              </Link>
             </>
           ) : (
             <>

@@ -12,6 +12,7 @@ import MascotaDetalle from "../pages/MascotaDetalle";
 import AdminDashboard from "../admin/pages/AdminDashboard";
 import AdminLayout from "../admin/layout/AdminLayout";
 import AdminUsers from "../admin/pages/AdminUsers";
+import AdminMascotas from "../admin/pages/AdminMascotas";
 
 function AppRouter() {
   return (
@@ -37,6 +38,7 @@ function AppRouter() {
           >
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="users" element={<AdminUsers />} />
+            <Route path="mascotas" element={<AdminMascotas />} />
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
           </Route>
