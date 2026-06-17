@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import axiosConfig from "../api/axiosConfig";
 import { useAuth } from "../hooks/useAuth";
@@ -103,7 +104,18 @@ function formatFechaReporte(fechaReporte) {
 
 function MisMascotas() {
   const { userId, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [mascotas, setMascotas] = useState([]);
+  function getUbicacionLabel(mascota) {
+    const lat = mascota?.latitud ?? mascota?.ubicacion?.latitud;
+    const lng = mascota?.longitud ?? mascota?.ubicacion?.longitud;
+
+    if (lat == null || lng == null) {
+      return "Sin ubicación registrada";
+    }
+
+    return `${Number(lat).toFixed(5)}, ${Number(lng).toFixed(5)}`;
+  }
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [actionError, setActionError] = useState("");
@@ -430,35 +442,45 @@ function MisMascotas() {
                     <div className="mascota-card-body">
                       <div className="mascota-card-title-row">
                         <h2>{mascota.nombre}</h2>
-                        <span className="mascota-status">{getEstadoLabel(mascota.estado)}</span>
+                        <span
+                          className={`mascota-status ${
+                            normalizeEstadoValue(mascota.estado) === "ENCONTRADA"
+                              ? "mascota-status-encontrada"
+                              : "mascota-status-perdida"
+                          }`}
+                        >
+                          {getEstadoLabel(mascota.estado)}
+                        </span>
                       </div>
 
                       <dl className="mascota-details">
                         <div>
-                          <dt>Raza</dt>
-                          <dd>{mascota.raza || "No informada"}</dd>
-                        </div>
-                        <div>
-                          <dt>Color</dt>
-                          <dd>{mascota.color || "No informado"}</dd>
-                        </div>
-                        <div>
-                          <dt>Edad</dt>
-                          <dd>{mascota.edad != null ? `${mascota.edad} años` : "No informada"}</dd>
+                          <dt>Nombre</dt>
+                          <dd>{mascota.nombre || "No informado"}</dd>
                         </div>
                         <div>
                           <dt>Tipo</dt>
                           <dd>{mascota.tipo || "No informado"}</dd>
                         </div>
                         <div>
-                          <dt>Dimensión</dt>
-                          <dd>{getDimensionLabel(mascota.dimension)}</dd>
-                        </div>
-                        <div>
-                          <dt>Fecha reporte</dt>
+                          <dt>Fecha de registro</dt>
                           <dd>{formatFechaReporte(mascota.fechaReporte)}</dd>
                         </div>
+                        <div>
+                          <dt>Ubicación</dt>
+                          <dd>{getUbicacionLabel(mascota)}</dd>
+                        </div>
                       </dl>
+
+                      <div className="mascota-card-actions-row">
+                        <button
+                          type="button"
+                          className="mascota-detail-link"
+                          onClick={() => navigate(`/mascota/${mascota.id}`)}
+                        >
+                          Ver más...
+                        </button>
+                      </div>
                     </div>
                   </article>
                 );
