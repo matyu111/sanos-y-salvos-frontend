@@ -9,6 +9,7 @@ import RegistrarMascota from "../pages/RegistrarMascota";
 import MisMascotas from "../pages/MisMascotas";
 import Coincidencias from "../pages/Coincidencias";
 import MascotaDetalle from "../pages/MascotaDetalle";
+import AdminDashboard from "../admin/pages/AdminDashboard";
 
 function AppRouter() {
   return (
@@ -17,6 +18,22 @@ function AppRouter() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/" element={<Navigate to="/inicio" replace />} />
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <Navigate to="/admin/dashboard" replace />
+            </ProtectedRoute>
+          }
+        />
         <Route
           element={
             <ProtectedRoute>

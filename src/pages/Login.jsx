@@ -15,7 +15,7 @@ function Login() {
   const [cargando, setCargando] = useState(false);
 
   if (auth.isAuthenticated) {
-    return <Navigate to="/inicio" replace />;
+    return <Navigate to={auth.rol === "ADMIN" ? "/admin/dashboard" : "/inicio"} replace />;
   }
 
   const handleSubmit = async (event) => {
@@ -26,7 +26,7 @@ function Login() {
     try {
       const data = await loginUsuario({ email, password });
       auth.setSession(data);
-      navigate("/inicio");
+      navigate(data?.rol === "ADMIN" ? "/admin/dashboard" : "/inicio", { replace: true });
     } catch {
       setError("No se pudo iniciar sesión. Verifica tu correo y contraseña.");
     } finally {
