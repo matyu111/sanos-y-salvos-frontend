@@ -17,10 +17,15 @@ function Navbar({ onToggleSidebar }) {
       <button className="hamburger-btn" onClick={onToggleSidebar}>
         ☰
       </button>
-      <div className="app-navbar-brand">
+      <button
+        type="button"
+        className="app-navbar-brand"
+        onClick={() => navigate("/inicio")}
+        aria-label="Ir a Inicio"
+      >
         <img className="app-navbar-logo" src={logo} alt="Logo de Sanos y Salvos" />
         <h2>Sanos y Salvos</h2>
-      </div>
+      </button>
       <div className="app-navbar-user">
         <span className="user-name">{auth.nombre || "Usuario"}</span>
         <button className="logout-btn" onClick={handleLogout}>
