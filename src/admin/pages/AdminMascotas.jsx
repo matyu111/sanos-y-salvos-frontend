@@ -94,7 +94,7 @@ function getUsuarioLabel(mascota) {
     mascota?.usuario?.nombreUsuario ||
     mascota?.dueno?.nombre ||
     mascota?.dueño?.nombre ||
-    (mascota?.usuarioId != null ? `ID ${mascota.usuarioId}` : "")
+    ""
   );
 }
 
@@ -335,15 +335,15 @@ function AdminMascotas() {
                       <dt>Tipo</dt>
                       <dd>{detalle?.tipo || mascota?.tipo || "No informado"}</dd>
                     </div>
-                    {usuarioLabel ? (
+                    {usuarioLabel && usuarioLabel.trim() ? (
                       <div>
-                        <dt>Usuario</dt>
+                        <dt>Dueño</dt>
                         <dd>{usuarioLabel}</dd>
                       </div>
                     ) : null}
                     {fechaLabel ? (
                       <div>
-                        <dt>Fecha registro</dt>
+                        <dt>Fecha</dt>
                         <dd>{fechaLabel}</dd>
                       </div>
                     ) : null}
@@ -358,25 +358,48 @@ function AdminMascotas() {
                     </button>
                   </div>
 
-                  {isExpanded ? (
-                    <div className="admin-pet-expanded">
-                      <p><strong>Detalle:</strong></p>
-                      {detalle?.id != null && <p>Id: {detalle.id}</p>}
-                      {detalle?.nombre && <p>Nombre: {detalle.nombre}</p>}
-                      {detalle?.tipo && <p>Tipo: {detalle.tipo}</p>}
-                      {detalle?.raza && <p>Raza: {detalle.raza}</p>}
-                      {detalle?.color && <p>Color: {detalle.color}</p>}
-                      {detalle?.edad != null && <p>Edad: {detalle.edad} años</p>}
-                      {detalle?.dimension && <p>Dimensión: {getDimensionLabel(detalle.dimension)}</p>}
-                      {detalle?.estado && <p>Estado: {getEstadoLabel(detalle.estado)}</p>}
-                      {usuarioLabel && <p>Usuario dueño: {usuarioLabel}</p>}
-                      {getUbicacionLabel(detalle) && <p>Ubicación: {getUbicacionLabel(detalle)}</p>}
-                    </div>
-                  ) : null}
+                  {/* Details are shown in a modal to avoid layout shifts */}
                 </div>
               </article>
             );
           })}
+        </div>
+      )}
+
+      {expandedId != null && (
+        <div
+          className="admin-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setExpandedId(null)}
+        >
+          <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="admin-modal-close" onClick={() => setExpandedId(null)}>
+              Cerrar
+            </button>
+            <div className="admin-modal-body">
+              <h3>Detalle de la mascota</h3>
+              {(() => {
+                const id = expandedId;
+                const detalle = detallePorId[id] || mascotas.find((m, i) => String(getMascotaId(m, i)) === String(id)) || {};
+
+                return (
+                  <div>
+                    {detalle?.id != null && <p>Id: {detalle.id}</p>}
+                    {detalle?.nombre && <p>Nombre: {detalle.nombre}</p>}
+                    {detalle?.tipo && <p>Tipo: {detalle.tipo}</p>}
+                    {detalle?.raza && <p>Raza: {detalle.raza}</p>}
+                    {detalle?.color && <p>Color: {detalle.color}</p>}
+                    {detalle?.edad != null && <p>Edad: {detalle.edad} años</p>}
+                    {detalle?.dimension && <p>Dimensión: {getDimensionLabel(detalle.dimension)}</p>}
+                    {detalle?.estado && <p>Estado: {getEstadoLabel(detalle.estado)}</p>}
+                    {getUsuarioLabel(detalle) && <p>Usuario dueño: {getUsuarioLabel(detalle)}</p>}
+                    {getUbicacionLabel(detalle) && <p>Ubicación: {getUbicacionLabel(detalle)}</p>}
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
         </div>
       )}
     </section>
