@@ -38,27 +38,6 @@ function getDimensionLabel(value) {
   return value || "No informada";
 }
 
-function getUbicacionLabel(mascota) {
-  const direccion =
-    mascota?.direccion ||
-    mascota?.ubicacion?.direccion ||
-    mascota?.ubicacion?.address ||
-    mascota?.ubicacion?.descripcion;
-
-  if (direccion) {
-    return direccion;
-  }
-
-  const lat = mascota?.latitud ?? mascota?.ubicacion?.latitud;
-  const lng = mascota?.longitud ?? mascota?.ubicacion?.longitud;
-
-  if (lat == null || lng == null) {
-    return "Sin ubicación registrada";
-  }
-
-  return `${Number(lat).toFixed(5)}, ${Number(lng).toFixed(5)}`;
-}
-
 function MascotaDetalle() {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -219,10 +198,6 @@ function MascotaDetalle() {
               <div>
                 <dt>Estado</dt>
                 <dd>{mascota.estado || "No informado"}</dd>
-              </div>
-              <div>
-                <dt>Ubicación</dt>
-                <dd>{getUbicacionLabel(mascota)}</dd>
               </div>
             </dl>
 

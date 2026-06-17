@@ -254,17 +254,6 @@ const getDimensionLabel = (dimension) => {
   return dimension || "No informada";
 };
 
-const getUbicacionLabel = (mascota) => {
-  const lat = mascota?.latitud ?? mascota?.ubicacion?.latitud;
-  const lng = mascota?.longitud ?? mascota?.ubicacion?.longitud;
-
-  if (lat == null || lng == null) {
-    return "Sin ubicación";
-  }
-
-  return `${Number(lat).toFixed(5)}, ${Number(lng).toFixed(5)}`;
-};
-
 function Coincidencias() {
   const navigate = useNavigate();
   const { userId, isAuthenticated } = useAuth();
@@ -397,10 +386,6 @@ function Coincidencias() {
           <div>
             <div style={styles.detailLabel}>Estado</div>
             <div style={styles.detailValue}>{mascota?.estado || "No informado"}</div>
-          </div>
-          <div>
-            <div style={styles.detailLabel}>Ubicación</div>
-            <div style={styles.detailValue}>{getUbicacionLabel(mascota)}</div>
           </div>
         </div>
       </div>
