@@ -20,7 +20,7 @@ function Navbar({ onToggleSidebar }) {
       <button
         type="button"
         className="app-navbar-brand"
-        onClick={() => navigate("/inicio")}
+        onClick={() => navigate(auth.rol === "ADMIN" ? "/admin/dashboard" : "/inicio")}
         aria-label="Ir a Inicio"
       >
         <img className="app-navbar-logo" src={logo} alt="Logo de Sanos y Salvos" />

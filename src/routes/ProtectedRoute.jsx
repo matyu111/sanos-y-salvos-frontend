@@ -10,7 +10,7 @@ function ProtectedRoute({ children, allowedRoles }) {
   }
 
   if (allowedRoles?.length && !allowedRoles.includes(auth.rol)) {
-    return <Navigate to="/inicio" replace />;
+    return <Navigate to={auth.rol === "ADMIN" ? "/admin/dashboard" : "/inicio"} replace />;
   }
 
   return children;
