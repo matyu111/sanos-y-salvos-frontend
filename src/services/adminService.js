@@ -51,6 +51,20 @@ export const obtenerMascotasAdminPorUsuario = async (usuarioId) => {
   return toArray(response.data);
 };
 
+export const obtenerCoincidenciasAdmin = async () => {
+  const response = await axiosConfig.get("/bff/coincidencias");
+  return toArray(response.data);
+};
+
+export const obtenerCoincidenciasAdminPorUsuario = async (usuarioId) => {
+  if (usuarioId == null || Number.isNaN(Number(usuarioId))) {
+    throw new Error("usuarioId inválido");
+  }
+
+  const response = await axiosConfig.get(`/bff/coincidencias/usuario/${usuarioId}`);
+  return toArray(response.data);
+};
+
 export const eliminarMascotaAdmin = async (id) => {
   if (id == null || Number.isNaN(Number(id))) {
     throw new Error("id inválido");

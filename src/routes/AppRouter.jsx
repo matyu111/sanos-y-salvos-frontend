@@ -13,6 +13,7 @@ import AdminDashboard from "../admin/pages/AdminDashboard";
 import AdminLayout from "../admin/layout/AdminLayout";
 import AdminUsers from "../admin/pages/AdminUsers";
 import AdminMascotas from "../admin/pages/AdminMascotas";
+import AdminCoincidencias from "../admin/pages/AdminCoincidencias";
 
 function AppRouter() {
   return (
@@ -39,6 +40,7 @@ function AppRouter() {
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="users" element={<AdminUsers />} />
             <Route path="mascotas" element={<AdminMascotas />} />
+            <Route path="coincidencias" element={<AdminCoincidencias />} />
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
           </Route>

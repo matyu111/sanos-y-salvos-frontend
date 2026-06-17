@@ -28,6 +28,12 @@ function AdminLayout() {
           >
             Mascotas
           </NavLink>
+          <NavLink
+            to="/admin/coincidencias"
+            className={({ isActive }) => `admin-inline-link ${isActive ? "active" : ""}`}
+          >
+            Coincidencias
+          </NavLink>
         </nav>
       </header>
 
