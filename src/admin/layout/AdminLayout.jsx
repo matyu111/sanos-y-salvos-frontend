@@ -22,6 +22,12 @@ function AdminLayout() {
           >
             Usuarios
           </NavLink>
+          <NavLink
+            to="/admin/mascotas"
+            className={({ isActive }) => `admin-inline-link ${isActive ? "active" : ""}`}
+          >
+            Mascotas
+          </NavLink>
         </nav>
       </header>
 

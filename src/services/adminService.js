@@ -17,6 +17,49 @@ export const obtenerUsuariosAdmin = async () => {
   return toArray(response.data);
 };
 
+export const obtenerMascotasAdmin = async () => {
+  const response = await axiosConfig.get("/bff/mascotas");
+  return toArray(response.data);
+};
+
+export const obtenerMascotaAdminPorId = async (id) => {
+  if (id == null || Number.isNaN(Number(id))) {
+    throw new Error("id inválido");
+  }
+
+  const response = await axiosConfig.get(`/bff/mascotas/${id}`);
+  return response.data;
+};
+
+export const obtenerMascotasAdminPorEstado = async (estado) => {
+  const estadoNormalizado = String(estado ?? "").trim().toUpperCase();
+
+  if (!estadoNormalizado) {
+    return [];
+  }
+
+  const response = await axiosConfig.get(`/bff/mascotas/estado/${estadoNormalizado}`);
+  return toArray(response.data);
+};
+
+export const obtenerMascotasAdminPorUsuario = async (usuarioId) => {
+  if (usuarioId == null || Number.isNaN(Number(usuarioId))) {
+    throw new Error("usuarioId inválido");
+  }
+
+  const response = await axiosConfig.get(`/bff/mascotas/usuario/${usuarioId}`);
+  return toArray(response.data);
+};
+
+export const eliminarMascotaAdmin = async (id) => {
+  if (id == null || Number.isNaN(Number(id))) {
+    throw new Error("id inválido");
+  }
+
+  const response = await axiosConfig.delete(`/bff/mascotas/${id}`);
+  return response.data;
+};
+
 export const obtenerDashboardAdmin = async () => {
   const [usuariosResponse, mascotasResponse, coincidenciasResponse] = await Promise.allSettled([
     axiosConfig.get("/bff/usuarios"),
