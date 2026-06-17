@@ -106,16 +106,6 @@ function MisMascotas() {
   const { userId, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [mascotas, setMascotas] = useState([]);
-  function getUbicacionLabel(mascota) {
-    const lat = mascota?.latitud ?? mascota?.ubicacion?.latitud;
-    const lng = mascota?.longitud ?? mascota?.ubicacion?.longitud;
-
-    if (lat == null || lng == null) {
-      return "Sin ubicación registrada";
-    }
-
-    return `${Number(lat).toFixed(5)}, ${Number(lng).toFixed(5)}`;
-  }
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [actionError, setActionError] = useState("");
@@ -465,10 +455,6 @@ function MisMascotas() {
                         <div>
                           <dt>Fecha de registro</dt>
                           <dd>{formatFechaReporte(mascota.fechaReporte)}</dd>
-                        </div>
-                        <div>
-                          <dt>Ubicación</dt>
-                          <dd>{getUbicacionLabel(mascota)}</dd>
                         </div>
                       </dl>
 
