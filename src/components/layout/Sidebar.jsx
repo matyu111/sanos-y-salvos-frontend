@@ -1,6 +1,10 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
 
 function Sidebar({ isOpen, onClose }) {
+  const auth = useAuth();
+  const isAdmin = auth.rol === "ADMIN";
+
   return (
     <>
       {isOpen && <div className="sidebar-overlay" onClick={onClose}></div>}
@@ -10,27 +14,40 @@ function Sidebar({ isOpen, onClose }) {
           <button className="sidebar-close-btn" onClick={onClose}>✕</button>
         </div>
         <nav className="sidebar-nav">
-          <Link to="/inicio" className="sidebar-link" onClick={onClose}>
-            Inicio
-          </Link>
-          <Link to="/registrar-mascota" className="sidebar-link" onClick={onClose}>
-            Registrar Mascota
-          </Link>
-          <Link to="/mis-mascotas" className="sidebar-link" onClick={onClose}>
-            Mis Mascotas
-          </Link>
-          <Link to="/coincidencias" className="sidebar-link" onClick={onClose}>
-            Coincidencias
-          </Link>
+          {isAdmin ? (
+            <>
+              <Link to="/admin/dashboard" className="sidebar-link" onClick={onClose}>
+                Dashboard Admin
+              </Link>
+              <Link to="/admin/users" className="sidebar-link" onClick={onClose}>
+                Usuarios
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link to="/inicio" className="sidebar-link" onClick={onClose}>
+                Inicio
+              </Link>
+              <Link to="/registrar-mascota" className="sidebar-link" onClick={onClose}>
+                Registrar Mascota
+              </Link>
+              <Link to="/mis-mascotas" className="sidebar-link" onClick={onClose}>
+                Mis Mascotas
+              </Link>
+              <Link to="/coincidencias" className="sidebar-link" onClick={onClose}>
+                Coincidencias
+              </Link>
 
-          <div className="sidebar-visual-actions" aria-label="Opciones visuales">
-            <button type="button" className="sidebar-link sidebar-link-button">
-              Perfil
-            </button>
-            <button type="button" className="sidebar-link sidebar-link-button">
-              Configuración
-            </button>
-          </div>
+              <div className="sidebar-visual-actions" aria-label="Opciones visuales">
+                <button type="button" className="sidebar-link sidebar-link-button">
+                  Perfil
+                </button>
+                <button type="button" className="sidebar-link sidebar-link-button">
+                  Configuración
+                </button>
+              </div>
+            </>
+          )}
         </nav>
       </aside>
     </>

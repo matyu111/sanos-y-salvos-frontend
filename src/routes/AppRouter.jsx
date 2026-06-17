@@ -10,6 +10,8 @@ import MisMascotas from "../pages/MisMascotas";
 import Coincidencias from "../pages/Coincidencias";
 import MascotaDetalle from "../pages/MascotaDetalle";
 import AdminDashboard from "../admin/pages/AdminDashboard";
+import AdminLayout from "../admin/layout/AdminLayout";
+import AdminUsers from "../admin/pages/AdminUsers";
 
 function AppRouter() {
   return (
@@ -19,28 +21,25 @@ function AppRouter() {
         <Route path="/register" element={<Register />} />
         <Route path="/" element={<Navigate to="/inicio" replace />} />
         <Route
-          path="/admin/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={["ADMIN"]}>
-              <AdminDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute allowedRoles={["ADMIN"]}>
-              <Navigate to="/admin/dashboard" replace />
-            </ProtectedRoute>
-          }
-        />
-        <Route
           element={
             <ProtectedRoute>
               <AppLayout />
             </ProtectedRoute>
           }
         >
+          <Route
+            path="admin"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
+                <AdminLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route index element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
+          </Route>
           <Route path="inicio" element={<Inicio />} />
           <Route path="registrar-mascota" element={<RegistrarMascota />} />
           <Route path="mis-mascotas" element={<MisMascotas />} />

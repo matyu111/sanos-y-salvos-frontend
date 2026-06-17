@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
-import axiosConfig from "../../api/axiosConfig";
 import { useAuth } from "../../hooks/useAuth";
-import "../../styles/admin-dashboard.css";
+import { obtenerDashboardAdmin } from "../../services/adminService";
 
 const KPI_CARDS = [
   { key: "usuarios", label: "Total usuarios" },
@@ -12,18 +11,6 @@ const KPI_CARDS = [
   { key: "encontradas", label: "Mascotas encontradas" },
   { key: "coincidencias", label: "Total coincidencias" },
 ];
-
-function toArray(value) {
-  if (Array.isArray(value)) {
-    return value;
-  }
-
-  if (Array.isArray(value?.data)) {
-    return value.data;
-  }
-
-  return [];
-}
 
 function normalizeText(value) {
   return String(value ?? "")
@@ -56,41 +43,45 @@ function AdminDashboard() {
       setLoading(true);
       setError("");
 
-      const [usuariosResult, mascotasResult, coincidenciasResult] = await Promise.allSettled([
-        axiosConfig.get("/bff/usuarios"),
-        axiosConfig.get("/bff/mascotas"),
-        axiosConfig.get("/bff/coincidencias"),
-      ]);
+      try {
+        const { usuarios, mascotas, coincidencias } = await obtenerDashboardAdmin();
 
-      if (!active) {
-        return;
+        if (!active) {
+          return;
+        }
+
+        const perdidas = mascotas.filter(
+          (mascota) => normalizeText(mascota.estado) === "PERDIDA"
+        ).length;
+        const encontradas = mascotas.filter(
+          (mascota) => normalizeText(mascota.estado) === "ENCONTRADA"
+        ).length;
+
+        setKpis({
+          usuarios: usuarios.length,
+          mascotas: mascotas.length,
+          perdidas,
+          encontradas,
+          coincidencias: coincidencias.length,
+        });
+
+        setError("");
+      } catch {
+        if (active) {
+          setKpis({
+            usuarios: 0,
+            mascotas: 0,
+            perdidas: 0,
+            encontradas: 0,
+            coincidencias: 0,
+          });
+          setError("No fue posible cargar los indicadores; se muestran valores de respaldo.");
+        }
       }
 
-      const usuarios = usuariosResult.status === "fulfilled" ? toArray(usuariosResult.value) : [];
-      const mascotas = mascotasResult.status === "fulfilled" ? toArray(mascotasResult.value) : [];
-      const coincidencias =
-        coincidenciasResult.status === "fulfilled" ? toArray(coincidenciasResult.value) : [];
-
-      const perdidas = mascotas.filter((mascota) => normalizeText(mascota.estado) === "PERDIDA").length;
-      const encontradas = mascotas.filter((mascota) => normalizeText(mascota.estado) === "ENCONTRADA").length;
-
-      setKpis({
-        usuarios: usuarios.length,
-        mascotas: mascotas.length,
-        perdidas,
-        encontradas,
-        coincidencias: coincidencias.length,
-      });
-
-      const failed = [usuariosResult, mascotasResult, coincidenciasResult].some(
-        (result) => result.status === "rejected"
-      );
-
-      if (failed) {
-        setError("Algunos indicadores no pudieron cargarse; se muestran los datos disponibles.");
+      if (active) {
+        setLoading(false);
       }
-
-      setLoading(false);
     };
 
     void loadData();
@@ -106,36 +97,39 @@ function AdminDashboard() {
   );
 
   if (auth.rol !== "ADMIN") {
-    return <Navigate to="/inicio" replace />;
+    return null;
   }
 
   return (
-    <main className="admin-dashboard-page">
-      <section className="admin-dashboard-shell">
-        <header className="admin-dashboard-header">
-          <div>
-            <p className="admin-dashboard-eyebrow">Acceso restringido</p>
-            <h1>Dashboard Admin Sanos y Salvos</h1>
-            <p>
-              Resumen operativo básico para supervisión general de usuarios, mascotas y
-              coincidencias.
-            </p>
-          </div>
-          <div className="admin-dashboard-badge">{loading ? "Actualizando" : "En línea"}</div>
-        </header>
+    <section className="admin-section">
+      <header className="admin-section-header">
+        <div>
+          <p className="admin-section-kicker">Resumen operativo</p>
+          <h2>Dashboard Admin Sanos y Salvos</h2>
+          <p>
+            KPIs consolidados del sistema para usuarios, mascotas perdidas/encontradas y
+            coincidencias.
+          </p>
+        </div>
+        <div className="admin-section-actions">
+          <span className="admin-pill">{loading ? "Actualizando" : "En linea"}</span>
+          <NavLink to="/admin/users" className="admin-action-link">
+            Ver usuarios
+          </NavLink>
+        </div>
+      </header>
 
-        {error && <div className="admin-dashboard-alert">{error}</div>}
+      {error && <div className="admin-feedback admin-feedback-warning">{error}</div>}
 
-        <section className="admin-dashboard-grid">
-          {cards.map((card) => (
-            <article className="admin-kpi-card" key={card.key}>
-              <span className="admin-kpi-label">{card.label}</span>
-              <strong className="admin-kpi-value">{card.value}</strong>
-            </article>
-          ))}
-        </section>
+      <section className="admin-kpi-grid">
+        {cards.map((card) => (
+          <article className="admin-card" key={card.key}>
+            <span className="admin-card-label">{card.label}</span>
+            <strong className="admin-card-value">{card.value}</strong>
+          </article>
+        ))}
       </section>
-    </main>
+    </section>
   );
 }
 
