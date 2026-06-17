@@ -374,28 +374,61 @@ function AdminMascotas() {
           onClick={() => setExpandedId(null)}
         >
           <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="admin-modal-close" onClick={() => setExpandedId(null)}>
-              Cerrar
-            </button>
-            <div className="admin-modal-body">
+            <div className="admin-modal-header">
               <h3>Detalle de la mascota</h3>
+              <button className="admin-modal-close" aria-label="Cerrar" onClick={() => setExpandedId(null)}>
+                ✕
+              </button>
+            </div>
+
+            <div className="admin-modal-body">
               {(() => {
                 const id = expandedId;
                 const detalle = detallePorId[id] || mascotas.find((m, i) => String(getMascotaId(m, i)) === String(id)) || {};
 
                 return (
-                  <div>
-                    {detalle?.id != null && <p>Id: {detalle.id}</p>}
-                    {detalle?.nombre && <p>Nombre: {detalle.nombre}</p>}
-                    {detalle?.tipo && <p>Tipo: {detalle.tipo}</p>}
-                    {detalle?.raza && <p>Raza: {detalle.raza}</p>}
-                    {detalle?.color && <p>Color: {detalle.color}</p>}
-                    {detalle?.edad != null && <p>Edad: {detalle.edad} años</p>}
-                    {detalle?.dimension && <p>Dimensión: {getDimensionLabel(detalle.dimension)}</p>}
-                    {detalle?.estado && <p>Estado: {getEstadoLabel(detalle.estado)}</p>}
-                    {getUsuarioLabel(detalle) && <p>Usuario dueño: {getUsuarioLabel(detalle)}</p>}
-                    {getUbicacionLabel(detalle) && <p>Ubicación: {getUbicacionLabel(detalle)}</p>}
-                  </div>
+                  <dl className="admin-modal-grid">
+                    <div>
+                      <dt>Nombre</dt>
+                      <dd>{detalle?.nombre || "—"}</dd>
+                    </div>
+                    <div>
+                      <dt>Tipo</dt>
+                      <dd>{detalle?.tipo || "—"}</dd>
+                    </div>
+                    <div>
+                      <dt>Raza</dt>
+                      <dd>{detalle?.raza || "—"}</dd>
+                    </div>
+                    <div>
+                      <dt>Color</dt>
+                      <dd>{detalle?.color || "—"}</dd>
+                    </div>
+                    <div>
+                      <dt>Edad</dt>
+                      <dd>{detalle?.edad != null ? `${detalle.edad} años` : "—"}</dd>
+                    </div>
+                    <div>
+                      <dt>Dimensión</dt>
+                      <dd>{detalle?.dimension ? getDimensionLabel(detalle.dimension) : "—"}</dd>
+                    </div>
+                    <div>
+                      <dt>Estado</dt>
+                      <dd>{detalle?.estado ? getEstadoLabel(detalle.estado) : "—"}</dd>
+                    </div>
+                    {getUsuarioLabel(detalle) && (
+                      <div>
+                        <dt>Dueño</dt>
+                        <dd>{getUsuarioLabel(detalle)}</dd>
+                      </div>
+                    )}
+                    {getUbicacionLabel(detalle) && (
+                      <div>
+                        <dt>Ubicación</dt>
+                        <dd>{getUbicacionLabel(detalle)}</dd>
+                      </div>
+                    )}
+                  </dl>
                 );
               })()}
             </div>
