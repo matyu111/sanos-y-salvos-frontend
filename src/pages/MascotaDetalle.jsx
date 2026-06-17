@@ -20,6 +20,35 @@ function formatFecha(fechaReporte) {
   }).format(fecha);
 }
 
+function getDimensionLabel(value) {
+  const normalized = String(value ?? "").trim().toUpperCase();
+
+  if (normalized === "PEQUENA" || normalized === "PEQUEÑA") {
+    return "Pequeña";
+  }
+
+  if (normalized === "MEDIANA") {
+    return "Mediana";
+  }
+
+  if (normalized === "GRANDE") {
+    return "Grande";
+  }
+
+  return value || "No informada";
+}
+
+function getUbicacionLabel(mascota) {
+  const lat = mascota?.latitud ?? mascota?.ubicacion?.latitud;
+  const lng = mascota?.longitud ?? mascota?.ubicacion?.longitud;
+
+  if (lat == null || lng == null) {
+    return "Sin ubicación registrada";
+  }
+
+  return `${Number(lat).toFixed(5)}, ${Number(lng).toFixed(5)}`;
+}
+
 function MascotaDetalle() {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -30,8 +59,8 @@ function MascotaDetalle() {
   const [modalAbierto, setModalAbierto] = useState(false);
   const [mensajeExito, setMensajeExito] = useState("");
   const [formReporte, setFormReporte] = useState({
-    nombre: "",
-    telefono: "",
+    nombreDueno: "",
+    correoDueno: "",
     comentario: "",
   });
 
@@ -97,16 +126,16 @@ function MascotaDetalle() {
 
     const nuevoReporte = {
       mascotaId: Number(id),
-      nombre: formReporte.nombre.trim(),
-      telefono: formReporte.telefono.trim(),
+      nombreDueno: formReporte.nombreDueno.trim(),
+      correoDueno: formReporte.correoDueno.trim(),
       comentario: formReporte.comentario.trim(),
       creadoEn: new Date().toISOString(),
     };
 
     setReportesCiudadanos((prev) => [...prev, nuevoReporte]);
     setFormReporte({
-      nombre: "",
-      telefono: "",
+      nombreDueno: "",
+      correoDueno: "",
       comentario: "",
     });
     setModalAbierto(false);
@@ -181,7 +210,15 @@ function MascotaDetalle() {
               </div>
               <div>
                 <dt>Dimensión</dt>
-                <dd>{mascota.dimension || "No informada"}</dd>
+                <dd>{getDimensionLabel(mascota.dimension)}</dd>
+              </div>
+              <div>
+                <dt>Estado</dt>
+                <dd>{mascota.estado || "No informado"}</dd>
+              </div>
+              <div>
+                <dt>Ubicación</dt>
+                <dd>{getUbicacionLabel(mascota)}</dd>
               </div>
             </dl>
 
@@ -230,25 +267,25 @@ function MascotaDetalle() {
 
             <form className="detail-modal-form" onSubmit={handleSubmitReporte}>
               <label className="detail-modal-field">
-                <span>Nombre</span>
+                <span>Nombre del dueño</span>
                 <input
-                  name="nombre"
+                  name="nombreDueno"
                   type="text"
-                  value={formReporte.nombre}
+                  value={formReporte.nombreDueno}
                   onChange={handleChangeReporte}
-                  placeholder="Tu nombre"
+                  placeholder="Nombre del dueño"
                   required
                 />
               </label>
 
               <label className="detail-modal-field">
-                <span>Teléfono</span>
+                <span>Correo del dueño</span>
                 <input
-                  name="telefono"
-                  type="tel"
-                  value={formReporte.telefono}
+                  name="correoDueno"
+                  type="email"
+                  value={formReporte.correoDueno}
                   onChange={handleChangeReporte}
-                  placeholder="+56 9 1234 5678"
+                  placeholder="correo@ejemplo.com"
                   required
                 />
               </label>

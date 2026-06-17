@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../hooks/useAuth";
@@ -15,13 +15,6 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     gap: "10px",
-  },
-  eyebrow: {
-    color: "#b9436d",
-    textTransform: "uppercase",
-    letterSpacing: "0.08em",
-    fontSize: "12px",
-    fontWeight: 700,
   },
   description: {
     color: "#666",
@@ -54,7 +47,7 @@ const styles = {
   },
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
     gap: "20px",
   },
   card: {
@@ -92,19 +85,8 @@ const styles = {
   topInfo: {
     display: "flex",
     flexDirection: "column",
-    gap: "6px",
+    gap: "8px",
     minWidth: 0,
-  },
-  badge: {
-    alignSelf: "flex-start",
-    padding: "6px 10px",
-    borderRadius: "999px",
-    background: "#fff1f6",
-    color: "#b9436d",
-    fontSize: "11px",
-    fontWeight: 800,
-    textTransform: "uppercase",
-    letterSpacing: "0.04em",
   },
   title: {
     color: "#2f2f33",
@@ -115,28 +97,28 @@ const styles = {
     color: "#666",
     fontSize: "14px",
   },
+  fixedMatchBadge: {
+    alignSelf: "flex-start",
+    padding: "8px 12px",
+    borderRadius: "999px",
+    background: "#e9f8ef",
+    border: "1px solid #b8e0c4",
+    color: "#216b44",
+    fontSize: "12px",
+    fontWeight: 700,
+    lineHeight: 1.35,
+  },
   body: {
     padding: "20px",
     display: "grid",
     gap: "14px",
   },
-  compareSection: {
-    display: "grid",
-    gap: "10px",
-  },
-  compareTitle: {
-    color: "#8d8d96",
-    fontSize: "11px",
-    fontWeight: 700,
-    textTransform: "uppercase",
-    letterSpacing: "0.05em",
-  },
   compareGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-    gap: "12px",
+    gap: "14px",
   },
-  petPreviewCard: {
+  petPanel: {
     borderRadius: "14px",
     border: "1px solid #f0dde5",
     background: "#fff8fb",
@@ -146,13 +128,13 @@ const styles = {
   },
   petImage: {
     width: "100%",
-    height: "140px",
+    height: "190px",
     objectFit: "cover",
     display: "block",
   },
   petImagePlaceholder: {
     width: "100%",
-    height: "140px",
+    height: "190px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -161,28 +143,18 @@ const styles = {
     fontWeight: 700,
     fontSize: "13px",
   },
-  petMeta: {
-    padding: "10px 12px",
-    display: "grid",
-    gap: "2px",
+  petContent: {
+    padding: "12px",
   },
-  petMetaLabel: {
-    color: "#8d8d96",
-    fontSize: "11px",
-    fontWeight: 700,
-    textTransform: "uppercase",
-    letterSpacing: "0.04em",
-  },
-  petMetaName: {
+  petTitle: {
     color: "#2f2f33",
-    fontWeight: 700,
-    fontSize: "14px",
-    lineHeight: 1.3,
+    fontWeight: 800,
+    fontSize: "16px",
+    marginBottom: "10px",
   },
-  details: {
+  petDetails: {
     display: "grid",
-    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-    gap: "14px",
+    gap: "10px",
   },
   detailLabel: {
     color: "#8d8d96",
@@ -194,7 +166,7 @@ const styles = {
   },
   detailValue: {
     color: "#333",
-    fontSize: "15px",
+    fontSize: "14px",
     lineHeight: 1.4,
   },
   descriptionBox: {
@@ -222,18 +194,6 @@ const styles = {
     transition: "background 0.2s ease, transform 0.2s ease",
   },
 };
-
-function getBadgeLabel(porcentajeCoincidencia) {
-  if (porcentajeCoincidencia >= 100) {
-    return "Coincidencia Alta";
-  }
-
-  if (porcentajeCoincidencia >= 75) {
-    return "Coincidencia Probable";
-  }
-
-  return "Coincidencia Detectada";
-}
 
 const normalizeList = (value) => {
   if (Array.isArray(value)) {
@@ -269,6 +229,35 @@ const toImageSrc = (fotoBase64) => {
   }
 
   return `data:image/jpeg;base64,${fotoBase64}`;
+};
+
+const getDimensionLabel = (dimension) => {
+  const normalized = String(dimension ?? "").trim().toUpperCase();
+
+  if (normalized === "PEQUENA" || normalized === "PEQUEÑA") {
+    return "Pequeña";
+  }
+
+  if (normalized === "MEDIANA") {
+    return "Mediana";
+  }
+
+  if (normalized === "GRANDE") {
+    return "Grande";
+  }
+
+  return dimension || "No informada";
+};
+
+const getUbicacionLabel = (mascota) => {
+  const lat = mascota?.latitud ?? mascota?.ubicacion?.latitud;
+  const lng = mascota?.longitud ?? mascota?.ubicacion?.longitud;
+
+  if (lat == null || lng == null) {
+    return "Sin ubicación";
+  }
+
+  return `${Number(lat).toFixed(5)}, ${Number(lng).toFixed(5)}`;
 };
 
 function Coincidencias() {
@@ -350,6 +339,67 @@ function Coincidencias() {
 
   const tieneCoincidencias = coincidencias.length > 0;
 
+  const renderPetPanel = (title, mascota, fallbackNombre, fallbackData) => (
+    <article style={styles.petPanel}>
+      {mascota?.fotoBase64 ? (
+        <img
+          src={toImageSrc(mascota.fotoBase64)}
+          alt={`${title} ${mascota.nombre || "sin nombre"}`}
+          style={styles.petImage}
+        />
+      ) : (
+        <div style={styles.petImagePlaceholder}>Sin foto</div>
+      )}
+
+      <div style={styles.petContent}>
+        <h3 style={styles.petTitle}>{title}</h3>
+
+        <div style={styles.petDetails}>
+          <div>
+            <div style={styles.detailLabel}>Nombre</div>
+            <div style={styles.detailValue}>{mascota?.nombre || fallbackNombre || "No informado"}</div>
+          </div>
+          <div>
+            <div style={styles.detailLabel}>Tipo</div>
+            <div style={styles.detailValue}>{mascota?.tipo || fallbackData.tipo || "No informado"}</div>
+          </div>
+          <div>
+            <div style={styles.detailLabel}>Raza</div>
+            <div style={styles.detailValue}>{mascota?.raza || fallbackData.raza || "No informada"}</div>
+          </div>
+          <div>
+            <div style={styles.detailLabel}>Color</div>
+            <div style={styles.detailValue}>{mascota?.color || fallbackData.color || "No informado"}</div>
+          </div>
+          <div>
+            <div style={styles.detailLabel}>Edad</div>
+            <div style={styles.detailValue}>
+              {mascota?.edad != null
+                ? `${mascota.edad} años`
+                : fallbackData.edad != null
+                  ? `${fallbackData.edad} años`
+                  : "No informada"}
+            </div>
+          </div>
+          <div>
+            <div style={styles.detailLabel}>Dimensión</div>
+            <div style={styles.detailValue}>
+              {getDimensionLabel(mascota?.dimension || fallbackData.dimension)}
+            </div>
+          </div>
+          <div>
+            <div style={styles.detailLabel}>Estado</div>
+            <div style={styles.detailValue}>{mascota?.estado || "No informado"}</div>
+          </div>
+          <div>
+            <div style={styles.detailLabel}>Ubicación</div>
+            <div style={styles.detailValue}>{getUbicacionLabel(mascota)}</div>
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+
   const renderContent = () => {
     if (loading) {
       return <div style={styles.stateCard}>Cargando coincidencias...</div>;
@@ -369,17 +419,21 @@ function Coincidencias() {
       <section style={styles.grid} aria-label="Listado de coincidencias">
         {coincidencias.map((coincidencia) => {
           const porcentaje = Number(coincidencia.porcentajeCoincidencia ?? 0);
-          const badge = porcentaje >= 100 || porcentaje >= 75 ? getBadgeLabel(porcentaje) : null;
 
           return (
-            <article key={`${coincidencia.idMascotaPerdida}-${coincidencia.idMascotaEncontrada}`} style={styles.card}>
+            <article
+              key={`${coincidencia.idMascotaPerdida}-${coincidencia.idMascotaEncontrada}`}
+              style={styles.card}
+            >
               <div style={styles.cardTop}>
                 <div style={styles.topInfo}>
-                  {badge ? <span style={styles.badge}>{badge}</span> : null}
                   <h2 style={styles.title}>Coincidencia de Mascota</h2>
                   <p style={styles.subtitle}>
                     {coincidencia.nombreMascotaPerdida} con {coincidencia.nombreMascotaEncontrada}
                   </p>
+                  <span style={styles.fixedMatchBadge}>
+                    Posible coincidencia por raza, color, edad y dimensión
+                  </span>
                 </div>
 
                 <div style={styles.score} aria-label={`${porcentaje}% de coincidencia`}>
@@ -388,91 +442,20 @@ function Coincidencias() {
               </div>
 
               <div style={styles.body}>
-                <div style={styles.compareSection}>
-                  <div style={styles.compareTitle}>Comparación visual</div>
+                <div style={styles.compareGrid}>
+                  {renderPetPanel(
+                    "Mi mascota",
+                    coincidencia.mascotaPerdida,
+                    coincidencia.nombreMascotaPerdida,
+                    coincidencia
+                  )}
 
-                  <div style={styles.compareGrid}>
-                    <article style={styles.petPreviewCard}>
-                      {coincidencia.mascotaPerdida?.fotoBase64 ? (
-                        <img
-                          src={toImageSrc(coincidencia.mascotaPerdida.fotoBase64)}
-                          alt={`Mascota perdida ${coincidencia.mascotaPerdida.nombre || "sin nombre"}`}
-                          style={styles.petImage}
-                        />
-                      ) : (
-                        <div style={styles.petImagePlaceholder}>Sin foto</div>
-                      )}
-
-                      <div style={styles.petMeta}>
-                        <span style={styles.petMetaLabel}>Mascota perdida</span>
-                        <span style={styles.petMetaName}>
-                          {coincidencia.mascotaPerdida?.nombre ||
-                            coincidencia.nombreMascotaPerdida ||
-                            "No informada"}
-                        </span>
-                      </div>
-                    </article>
-
-                    <article style={styles.petPreviewCard}>
-                      {coincidencia.mascotaEncontrada?.fotoBase64 ? (
-                        <img
-                          src={toImageSrc(coincidencia.mascotaEncontrada.fotoBase64)}
-                          alt={`Mascota encontrada ${coincidencia.mascotaEncontrada.nombre || "sin nombre"}`}
-                          style={styles.petImage}
-                        />
-                      ) : (
-                        <div style={styles.petImagePlaceholder}>Sin foto</div>
-                      )}
-
-                      <div style={styles.petMeta}>
-                        <span style={styles.petMetaLabel}>Mascota encontrada</span>
-                        <span style={styles.petMetaName}>
-                          {coincidencia.mascotaEncontrada?.nombre ||
-                            coincidencia.nombreMascotaEncontrada ||
-                            "No informada"}
-                        </span>
-                      </div>
-                    </article>
-                  </div>
-                </div>
-
-                <div style={styles.details}>
-                  <div>
-                    <div style={styles.detailLabel}>Mascota perdida</div>
-                    <div style={styles.detailValue}>
-                      {coincidencia.mascotaPerdida?.nombre ||
-                        coincidencia.nombreMascotaPerdida ||
-                        "No informada"}
-                    </div>
-                  </div>
-                  <div>
-                    <div style={styles.detailLabel}>Mascota encontrada</div>
-                    <div style={styles.detailValue}>
-                      {coincidencia.mascotaEncontrada?.nombre ||
-                        coincidencia.nombreMascotaEncontrada ||
-                        "No informada"}
-                    </div>
-                  </div>
-                  <div>
-                    <div style={styles.detailLabel}>Tipo</div>
-                    <div style={styles.detailValue}>{coincidencia.tipo || "No informado"}</div>
-                  </div>
-                  <div>
-                    <div style={styles.detailLabel}>Raza</div>
-                    <div style={styles.detailValue}>{coincidencia.raza || "No informada"}</div>
-                  </div>
-                  <div>
-                    <div style={styles.detailLabel}>Color</div>
-                    <div style={styles.detailValue}>{coincidencia.color || "No informado"}</div>
-                  </div>
-                  <div>
-                    <div style={styles.detailLabel}>Edad</div>
-                    <div style={styles.detailValue}>{coincidencia.edad != null ? `${coincidencia.edad} años` : "No informada"}</div>
-                  </div>
-                  <div>
-                    <div style={styles.detailLabel}>Dimensión</div>
-                    <div style={styles.detailValue}>{coincidencia.dimension || "No informada"}</div>
-                  </div>
+                  {renderPetPanel(
+                    "Posible coincidencia",
+                    coincidencia.mascotaEncontrada,
+                    coincidencia.nombreMascotaEncontrada,
+                    coincidencia
+                  )}
                 </div>
 
                 <div style={styles.descriptionBox}>
@@ -507,8 +490,6 @@ function Coincidencias() {
   return (
     <div style={styles.page} className="page-container">
       <header style={styles.header}>
-        <p style={styles.eyebrow}>Coincidencias</p>
-        <h1>Coincidencias</h1>
         <p style={styles.description}>
           Revisa posibles cruces entre mascotas perdidas y encontradas asociados a tu cuenta.
         </p>
