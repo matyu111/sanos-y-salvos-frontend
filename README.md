@@ -193,39 +193,15 @@ Base: `/api/geolocalizacion`
 | GET | `/api/geolocalizacion/distancia` | Calcula distancia entre coordenadas | Bearer JWT |
 | GET | `/api/geolocalizacion/cercanas` | Busca ubicaciones dentro de un radio | Bearer JWT |
 
-## 7. Swagger / OpenAPI
 
-El proyecto incluye documentación OpenAPI en el archivo [`swagger.yaml`](swagger.yaml).
-
-### Cómo visualizarlo
-
-Opciones recomendadas:
-
-1. Abrir `swagger.yaml` con una extensión de Swagger Editor o OpenAPI Viewer en VS Code.
-2. Importarlo en Swagger Editor web.
-3. Cargarlo en herramientas compatibles con OpenAPI 3.0.
-
-La documentación incluye:
-
-- Base URL del sistema.
-- Esquema de autenticación `Bearer JWT`.
-- Rutas públicas y protegidas.
-- Ejemplos basados en los DTO reales.
-
-## 8. Postman
-
-No se encontró una colección Postman versionada en el repositorio al momento de generar esta documentación.
-
-Si se desea entregar una colección, puede crearse a partir de los endpoints documentados en este README y en `swagger.yaml`.
-
-## 9. Notas importantes
+## 7. Notas importantes
 
 - No se modificó la lógica de negocio para generar esta documentación.
 - No se refactorizaron controladores, servicios, DTOs ni entidades.
 - Se mantuvo la separación de responsabilidades entre BFF y microservicios.
 - La documentación refleja únicamente rutas reales detectadas en el código fuente.
 
-## 10. Estructura general del repositorio
+## 18. Estructura general del repositorio
 
 ```txt
 sanos-y-salvos-backend-vargas-vargas/
@@ -238,7 +214,7 @@ sanos-y-salvos-backend-vargas-vargas/
 └── swagger.yaml
 ```
 
-## 11. Ejecución
+## 9. Ejecución
 
 Cada microservicio puede ejecutarse de forma independiente con Maven.
 
