@@ -17,6 +17,14 @@ export const obtenerUsuariosAdmin = async () => {
   return toArray(response.data);
 };
 
+export const eliminarUsuarioAdmin = async (id) => {
+  if (id == null || Number.isNaN(Number(id))) {
+    throw new Error("id inválido");
+  }
+
+  await axiosConfig.delete(`/bff/usuarios/${id}`);
+};
+
 export const obtenerMascotasAdmin = async () => {
   const response = await axiosConfig.get("/bff/mascotas");
   return toArray(response.data);
