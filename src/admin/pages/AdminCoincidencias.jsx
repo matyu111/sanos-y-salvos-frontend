@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   obtenerCoincidenciasAdmin,
   obtenerCoincidenciasAdminPorUsuario,
+  obtenerMascotasAdmin,
 } from "../../services/adminService";
 
 const FILTER_OPTIONS = [
@@ -109,6 +110,14 @@ function pickFirst(source, keys) {
 }
 
 function getPetSource(coincidencia, side) {
+  if (side === "perdida" && coincidencia?.mascotaPerdida) {
+    return coincidencia.mascotaPerdida;
+  }
+
+  if (side === "encontrada" && coincidencia?.mascotaEncontrada) {
+    return coincidencia.mascotaEncontrada;
+  }
+
   const capitalizedSide = side === "perdida" ? "Perdida" : "Encontrada";
   const nestedKeys = [
     `mascota${capitalizedSide}`,
@@ -217,18 +226,43 @@ function AdminCoincidencias() {
       setFilterFeedback("");
 
       try {
-        const data =
+        const coincidenciasPromise =
           filterMode === "ALL"
-            ? await obtenerCoincidenciasAdmin()
+            ? obtenerCoincidenciasAdmin()
             : usuarioIdActive
-              ? await obtenerCoincidenciasAdminPorUsuario(usuarioIdActive)
+              ? obtenerCoincidenciasAdminPorUsuario(usuarioIdActive)
               : [];
+        const mascotasPromise = obtenerMascotasAdmin();
+
+        const [coincidenciasData, mascotasData] = await Promise.all([
+          Promise.resolve(coincidenciasPromise),
+          mascotasPromise,
+        ]);
 
         if (!active) {
           return;
         }
 
-        setCoincidencias(normalizeList(data));
+        const coincidenciasList = normalizeList(coincidenciasData);
+        const mascotasList = normalizeList(mascotasData);
+        const mascotasById = new Map(
+          mascotasList
+            .filter((mascota) => mascota?.id != null)
+            .map((mascota) => [Number(mascota.id), mascota])
+        );
+
+        const coincidenciasConMascotas = coincidenciasList.map((coincidencia) => {
+          const idPerdida = Number(coincidencia.idMascotaPerdida);
+          const idEncontrada = Number(coincidencia.idMascotaEncontrada);
+
+          return {
+            ...coincidencia,
+            mascotaPerdida: mascotasById.get(idPerdida) || coincidencia.mascotaPerdida || null,
+            mascotaEncontrada: mascotasById.get(idEncontrada) || coincidencia.mascotaEncontrada || null,
+          };
+        });
+
+        setCoincidencias(coincidenciasConMascotas);
 
         if (filterMode === "USER" && !usuarioIdActive) {
           setFilterFeedback("Ingresa un ID de usuario para filtrar coincidencias.");
