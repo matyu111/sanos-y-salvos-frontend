@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 
-import { obtenerUsuariosAdmin } from "../../services/adminService";
+import {
+  obtenerUsuariosAdmin,
+  eliminarUsuarioAdmin,
+} from "../../services/adminService";
 
 function normalizeText(value) {
   return String(value ?? "")
@@ -62,6 +65,26 @@ function AdminUsers() {
   }, []);
 
   const rows = useMemo(() => usuarios, [usuarios]);
+  const handleDelete = async (id) => {
+  const confirmar = window.confirm(
+    "¿Seguro que deseas eliminar este usuario?"
+  );
+
+  if (!confirmar) {
+    return;
+  }
+
+  try {
+    await eliminarUsuarioAdmin(id);
+
+    setUsuarios((prev) =>
+      prev.filter((usuario) => usuario.id !== id)
+    );
+  } catch (error) {
+    alert("No fue posible eliminar el usuario.");
+  }
+};
+
 
   return (
     <section className="admin-section">
@@ -100,8 +123,17 @@ function AdminUsers() {
                 </dl>
 
                 <div className="admin-user-actions">
-                  <button type="button" onClick={() => setExpandedUser(isExpanded ? null : key)}>
+                  <button
+                    type="button"
+                    onClick={() => setExpandedUser(isExpanded ? null : key)}
+                  >
                     {isExpanded ? "Ocultar detalle" : "Ver detalle"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(usuario.id)}
+                  >
+                    Eliminar
                   </button>
                 </div>
 
