@@ -26,7 +26,7 @@ function AdminUsers() {
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [expandedUser, setExpandedUser] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   useEffect(() => {
     let active = true;
@@ -92,7 +92,9 @@ function AdminUsers() {
         <div>
           <p className="admin-section-kicker">Gestion basica</p>
           <h2>Usuarios</h2>
-          <p>Vista base para revisar usuarios y preparar acciones administrativas futuras.</p>
+          <p>
+            {rows.length} usuarios registrados en el sistema.
+          </p>
         </div>
       </header>
 
@@ -106,7 +108,6 @@ function AdminUsers() {
         <div className="admin-user-grid">
           {rows.map((usuario, index) => {
             const key = getUserKey(usuario, index);
-            const isExpanded = expandedUser === key;
 
             return (
               <article className="admin-user-card" key={key}>
@@ -125,9 +126,9 @@ function AdminUsers() {
                 <div className="admin-user-actions">
                   <button
                     type="button"
-                    onClick={() => setExpandedUser(isExpanded ? null : key)}
+                    onClick={() => setSelectedUser(usuario)}
                   >
-                    {isExpanded ? "Ocultar detalle" : "Ver detalle"}
+                    Ver detalle
                   </button>
                   <button
                     type="button"
@@ -137,18 +138,63 @@ function AdminUsers() {
                   </button>
                 </div>
 
-                {isExpanded && (
-                  <div className="admin-user-expanded">
-                    <p><strong>Detalle:</strong></p>
-                    {usuario?.id != null && <p>Id: {usuario.id}</p>}
-                    <p>Nombre: {usuario?.nombre || "Sin nombre"}</p>
-                    <p>Email: {usuario?.email || "Sin email"}</p>
-                    {usuario?.rol && <p>Rol: {toDisplayRole(usuario.rol)}</p>}
-                  </div>
-                )}
               </article>
             );
           })}
+        </div>
+      )}
+      {selectedUser && (
+        <div
+          className="admin-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setSelectedUser(null)}
+        >
+          <div
+            className="admin-modal"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="admin-modal-header">
+              <div>
+                <p className="admin-section-kicker">
+                  Detalle de usuario
+                </p>
+
+                <h3>
+                  {selectedUser.nombre || "Sin nombre"}
+                </h3>
+              </div>
+
+              <button
+                className="admin-modal-close"
+                type="button"
+                onClick={() => setSelectedUser(null)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="admin-modal-body">
+              {selectedUser.id != null && (
+                <p><strong>ID:</strong> {selectedUser.id}</p>
+              )}
+
+              <p>
+                <strong>Nombre:</strong>{" "}
+                {selectedUser.nombre || "Sin nombre"}
+              </p>
+
+              <p>
+                <strong>Email:</strong>{" "}
+                {selectedUser.email || "Sin email"}
+              </p>
+
+              <p>
+                <strong>Rol:</strong>{" "}
+                {toDisplayRole(selectedUser.rol)}
+              </p>
+            </div>
+          </div>
         </div>
       )}
     </section>
