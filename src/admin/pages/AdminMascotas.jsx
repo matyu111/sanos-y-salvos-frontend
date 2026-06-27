@@ -376,7 +376,7 @@ function AdminMascotas() {
         >
           <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
             <div className="admin-modal-header">
-              <h3>Detalle de la mascota</h3>
+              <h3>Detalle</h3>
               <button className="admin-modal-close" aria-label="Cerrar" onClick={() => setExpandedId(null)}>
                 ✕
               </button>
@@ -397,13 +397,37 @@ function AdminMascotas() {
 
                 return (
                   <>
-                    {fotoSrc && (
-                      <img
-                        src={fotoSrc}
-                        alt={detalle?.nombre || "Mascota"}
-                        className="admin-modal-pet-image"
-                      />
+                    {fotoSrc ? (
+                      <div className="admin-modal-pet-photo-wrap">
+                        <img
+                          src={fotoSrc}
+                          alt={detalle?.nombre || "Mascota"}
+                          className="admin-modal-pet-image"
+                        />
+                      </div>
+                    ) : (
+                      <div className="admin-modal-pet-photo-wrap">
+                        <div className="admin-pet-photo admin-pet-photo-placeholder">
+                          Sin foto
+                        </div>
+                      </div>
                     )}
+
+                    <p className="admin-modal-kicker">Detalle de mascota</p>
+
+                    <h2 className="admin-modal-title">
+                      {detalle?.nombre || "Sin nombre"}
+                    </h2>
+
+                    <span
+                      className={`admin-modal-status ${
+                        normalizeText(detalle?.estado) === "encontrada"
+                          ? "admin-pet-status-found"
+                          : "admin-pet-status-lost"
+                      }`}
+                    >
+                      {getEstadoLabel(detalle?.estado)}
+                    </span>
 
                     <dl className="admin-modal-grid">
                       <div>
