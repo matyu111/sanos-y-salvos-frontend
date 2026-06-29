@@ -1,12 +1,12 @@
 # Sanos y Salvos - Frontend
 
-Frontend oficial de la plataforma Sanos y Salvos, construido con React y Vite. Su responsabilidad es presentar las vistas de usuario y administración, coordinar la navegación protegida y consumir el backend a través de un BFF mediante HTTP.
+Frontend oficial de la plataforma Sanos y Salvos, construido con React y Vite. Su responsabilidad es presentar las vistas de usuario y administración, coordinar la navegación protegida y consumir el backend mediante el API Gateway utilizando HTTP.
 
 ## Descripción
 
 Este frontend permite a usuarios autenticados registrar mascotas, consultar sus mascotas, visualizar coincidencias y revisar el detalle de cada mascota. También incluye un área administrativa para gestionar usuarios, mascotas, coincidencias y un dashboard con indicadores operativos.
 
-La aplicación no mantiene persistencia propia ni implementa lógica de negocio de servidor. Todo acceso a datos se realiza mediante servicios HTTP centralizados sobre el BFF expuesto en `http://localhost:8080`.
+La aplicación no mantiene persistencia propia ni implementa lógica de negocio de servidor. Todo acceso a datos se realiza mediante servicios HTTP centralizados que consumen el API Gateway expuesto en `http://localhost:8080`, el cual enruta las solicitudes hacia los microservicios correspondientes.
 
 ## Arquitectura
 
@@ -19,7 +19,7 @@ La aplicación sigue una arquitectura de presentación organizada por dominios f
 - `src/routes`: define las rutas, el acceso protegido y la separación entre vistas públicas, de usuario y administrativas.
 - `src/context`: contiene el estado global de autenticación.
 - `src/hooks`: expone hooks reutilizables sobre contexto y estado global.
-- `src/services`: encapsula las llamadas HTTP al BFF por dominio funcional.
+- `src/services`: encapsula las llamadas HTTP al API Gateway por dominio funcional.
 - `src/api`: configura la instancia compartida de Axios.
 - `src/pages`: vistas principales del usuario autenticado.
 - `src/admin`: vistas y layout del área administrativa.
@@ -60,7 +60,7 @@ El área administrativa usa `AdminLayout`, que agrupa el encabezado del panel y 
 | React | Biblioteca principal de UI |
 | React DOM | Renderizado en navegador |
 | React Router DOM | Ruteo y protección de rutas |
-| Axios | Cliente HTTP hacia el BFF |
+| Axios | Cliente HTTP hacia el API Gateway |
 | Vite | Herramienta de desarrollo y build |
 | JavaScript | Lenguaje principal del frontend |
 | CSS | Estilos globales y por pantalla |
@@ -69,9 +69,59 @@ El área administrativa usa `AdminLayout`, que agrupa el encabezado del panel y 
 | React Leaflet | Integración React del mapa |
 | ESLint | Linter del proyecto |
 
+## Arquitectura tecnológica
+
+El frontend fue desarrollado siguiendo una arquitectura basada en componentes, donde cada responsabilidad se encuentra separada en módulos independientes.
+
+### Flujo general
+
+```text
+                Usuario
+                    │
+                    ▼
+          Frontend (React + Vite)
+                    │
+                    ▼
+          React Router + Context API
+                    │
+                    ▼
+            Servicios HTTP (Axios)
+                    │
+                    ▼
+              API Gateway (8080)
+                    │
+     ┌──────────────┼──────────────┐
+     ▼              ▼              ▼
+ ms-usuarios   ms-mascotas   ms-coincidencias
+                    │
+                    ▼
+           ms-geolocalizacion
+```
+
+### Componentes principales
+
+- **React** para la construcción de la interfaz de usuario.
+- **React Router DOM** para el manejo de rutas públicas y protegidas.
+- **Context API** para administrar el estado global de autenticación.
+- **Axios** para centralizar todas las solicitudes HTTP.
+- **API Gateway** como único punto de acceso al backend.
+- **Leaflet** para la visualización de mapas interactivos.
+- **Bootstrap** para apoyar el diseño responsivo de la interfaz.
+
+
 ## Comunicación con Backend
 
-La comunicación con el backend se centraliza en la instancia de Axios definida en `src/api/axiosConfig.js`. Esa instancia usa como base `http://localhost:8080` y agrega automáticamente el encabezado `Authorization: Bearer {token}` cuando existe una sesión guardada en `localStorage`.
+La comunicación con el backend se centraliza en la instancia de Axios definida en `src/api/axiosConfig.js`.
+
+Todas las solicitudes se realizan al **API Gateway**, configurado con la URL base `http://localhost:8080`. El Gateway es el único punto de entrada del sistema y se encarga de redirigir cada petición al microservicio correspondiente.
+
+La instancia Axios agrega automáticamente el encabezado:
+
+```http
+Authorization: Bearer {token}
+```
+
+cuando existe una sesión almacenada en `localStorage`.
 
 Todas las llamadas funcionales pasan por servicios ubicados en `src/services` o, en algunos flujos de edición y eliminación, usan directamente la misma instancia Axios. Las rutas observadas consumen el prefijo `/bff`, por ejemplo:
 
@@ -83,7 +133,19 @@ Todas las llamadas funcionales pasan por servicios ubicados en `src/services` o,
 - `/bff/coincidencias/usuario/{id}`
 - `/bff/geolocalizacion`
 
+Aunque el prefijo `/bff` se mantiene por compatibilidad con el proyecto original, actualmente las solicitudes son atendidas por el API Gateway, que redirige cada petición al microservicio correspondiente.
+
 La aplicación maneja la sesión con `AuthContext`, que persiste `token`, `userId`, `nombre`, `email` y `rol`. `ProtectedRoute` valida sesión y rol antes de permitir acceso a rutas privadas.
+
+## Seguridad
+
+La autenticación se basa en tokens JWT emitidos por el backend.
+
+Una vez autenticado el usuario:
+
+- El token se almacena en `localStorage`.
+- Axios incorpora automáticamente el encabezado `Authorization: Bearer {token}` en cada solicitud.
+- `ProtectedRoute` verifica la existencia del token y el rol del usuario antes de permitir el acceso a rutas privadas o administrativas.
 
 ## Funcionalidades
 
@@ -107,6 +169,8 @@ La aplicación maneja la sesión con `AuthContext`, que persiste `token`, `userI
 - Gestión administrativa de coincidencias.
 - Filtrado administrativo de coincidencias por usuario.
 - Visualización de perfiles del sistema en el dashboard general.
+- Consumo centralizado del backend mediante API Gateway.
+- Protección de rutas mediante autenticación JWT.
 
 ## Cambios realizados para la evaluación
 
@@ -115,7 +179,7 @@ En esta entrega se actualizó completamente la documentación del frontend en `R
 - Se describió la arquitectura real del proyecto por carpetas y responsabilidades.
 - Se documentaron las tecnologías efectivamente instaladas y usadas.
 - Se explicaron las rutas, layouts y el flujo de navegación.
-- Se documentó el consumo del BFF y la gestión de autenticación con Axios y `localStorage`.
+- Se documentó el consumo del API Gateway y la gestión de autenticación mediante Axios y localStorage.
 - Se enumeraron las funcionalidades realmente implementadas en las vistas y servicios.
 - Se incorporó la estructura real del proyecto sin inventar módulos ni dependencias.
 
@@ -218,6 +282,19 @@ En esta entrega se actualizó completamente la documentación del frontend en `R
 
 ```bash
 npm install
+```
+Si el proyecto se instala desde cero, las principales dependencias utilizadas son:
+
+```bash
+npm install bootstrap
+npm install axios
+npm install react-router-dom
+npm install leaflet react-leaflet
+```
+
+Posteriormente inicia el proyecto:
+
+```bash
 npm run dev
 ```
 
