@@ -28,44 +28,11 @@ function Login() {
     setCargando(true);
     try {
       await msalInitializedPromise;
-      
-      console.log("Iniciando autenticación interactiva con Microsoft Entra ID...");
-      const response = await msalInstance.loginPopup(loginRequest);
-      console.log("Respuesta de Azure AD recibida:", response);
-
-      const token = response.accessToken || response.idToken || "azure_ad_token_jwt";
-      const account = response.account || msalInstance.getAllAccounts()[0];
-
-      const email = account?.username || account?.idTokenClaims?.preferred_username || "usuario.prueba@sanosysalvosmaty.onmicrosoft.com";
-      const nombre = account?.name || account?.idTokenClaims?.name || "Usuario Azure AD";
-      
-      // Si en los claims de Azure AD viene el rol ADMIN asignado, o por defecto ADMIN para la prueba
-      const roles = account?.idTokenClaims?.roles || [];
-      const rol = roles.includes("ADMIN") || email.includes("usuario.prueba") || email.includes("admin") ? "ADMIN" : "ADMIN";
-
-      const sessionData = {
-        token,
-        userId: 1,
-        nombre,
-        email,
-        rol,
-      };
-
-      console.log("Estableciendo sesión en AuthContext:", sessionData);
-      auth.setSession(sessionData);
-
-      // Redireccionar al panel correspondiente
-      navigate(rol === "ADMIN" ? "/admin/dashboard" : "/inicio", { replace: true });
+      console.log("Iniciando redirección a Microsoft Entra ID (Azure AD)...");
+      await msalInstance.loginRedirect(loginRequest);
     } catch (err) {
       console.error("Error capturado en login Azure AD:", err);
-      if (err.errorCode === "user_cancelled") {
-        setError("El inicio de sesión fue cancelado por el usuario.");
-      } else if (err.errorCode === "interaction_in_progress") {
-        setError("Ya hay un proceso de autenticación en curso. Inténtalo de nuevo en unos segundos.");
-      } else {
-        setError("Error al iniciar sesión con Azure AD: " + (err.errorMessage || err.message || JSON.stringify(err)));
-      }
-    } finally {
+      setError("Error al iniciar sesión con Azure AD: " + (err.errorMessage || err.message || JSON.stringify(err)));
       setCargando(false);
     }
   };

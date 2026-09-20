@@ -30,10 +30,12 @@ export const initializeMsal = async () => {
   try {
     await msalInstance.initialize();
     const response = await msalInstance.handleRedirectPromise();
-    if (response && response.account) {
-      const email = response.account.username || "usuario.prueba@sanosysalvosmaty.onmicrosoft.com";
-      const nombre = response.account.name || "Usuario Azure AD";
-      const token = response.accessToken || response.idToken || "azure_ad_token_jwt";
+    const account = response?.account || msalInstance.getAllAccounts()[0];
+
+    if (account) {
+      const email = account.username || account.idTokenClaims?.preferred_username || "usuario.prueba@sanosysalvosmaty.onmicrosoft.com";
+      const nombre = account.name || account.idTokenClaims?.name || "Usuario Azure AD";
+      const token = response?.accessToken || response?.idToken || localStorage.getItem("token") || "azure_ad_token_jwt";
       localStorage.setItem("token", token);
       localStorage.setItem("userId", "1");
       localStorage.setItem("nombre", nombre);
@@ -47,6 +49,7 @@ export const initializeMsal = async () => {
 };
 
 export const msalInitializedPromise = initializeMsal();
+
 
 
 

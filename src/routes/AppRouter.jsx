@@ -15,13 +15,23 @@ import AdminUsers from "../admin/pages/AdminUsers";
 import AdminMascotas from "../admin/pages/AdminMascotas";
 import AdminCoincidencias from "../admin/pages/AdminCoincidencias";
 
+import { useAuth } from "../hooks/useAuth";
+
+function RootRedirect() {
+  const auth = useAuth();
+  if (!auth.isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  return <Navigate to={auth.rol === "ADMIN" ? "/admin/dashboard" : "/inicio"} replace />;
+}
+
 function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/" element={<Navigate to="/inicio" replace />} />
+        <Route path="/" element={<RootRedirect />} />
         <Route
           element={
             <ProtectedRoute>
