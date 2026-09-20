@@ -14,10 +14,11 @@ export const msalConfig = {
 };
 
 export const loginRequest = {
+  scopes: ["openid", "profile", "email", "User.Read"],
+};
+
+export const tokenRequest = {
   scopes: [
-    "openid",
-    "profile",
-    "email",
     "api://2e3c9553-c4e1-41d3-be14-7776e4a47f06/mascotas.read",
     "api://2e3c9553-c4e1-41d3-be14-7776e4a47f06/mascotas.write",
   ],

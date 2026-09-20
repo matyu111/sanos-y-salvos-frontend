@@ -34,24 +34,29 @@ function Login() {
       const response = await msalInstance.loginPopup(loginRequest);
       console.log("Respuesta de Azure AD recibida:", response);
 
-      // Obtenemos el token JWT emitido por Azure AD
-      const token = response.accessToken || response.idToken || "azure_jwt_token_active";
+      const token = response.idToken || response.accessToken || "azure_ad_token_jwt";
       const account = response.account || msalInstance.getAllAccounts()[0];
 
-      const userRol = "ADMIN";
       const sessionData = {
         token: token,
         userId: 1,
         nombre: account?.name || account?.username || "Usuario Azure AD",
         email: account?.username || "usuario.prueba@sanosysalvosmaty.onmicrosoft.com",
-        rol: userRol,
+        rol: "ADMIN",
       };
 
-      auth.setSession(sessionData);
-      console.log("Sesión guardada en AuthContext:", sessionData);
+      // Guardar directamente en localStorage para evitar cualquier problema de estado
+      localStorage.setItem("token", sessionData.token);
+      localStorage.setItem("userId", "1");
+      localStorage.setItem("nombre", sessionData.nombre);
+      localStorage.setItem("email", sessionData.email);
+      localStorage.setItem("rol", "ADMIN");
 
-      // Redirigir directamente al panel administrativo
-      navigate("/admin/dashboard", { replace: true });
+      auth.setSession(sessionData);
+      console.log("Sesión establecida correctamente con Azure AD:", sessionData);
+
+      // Redirección directa al Dashboard Administrativo
+      window.location.href = "/admin/dashboard";
     } catch (err) {
       console.error("Error capturado en login Azure AD:", err);
       if (err.errorCode === "interaction_in_progress") {
