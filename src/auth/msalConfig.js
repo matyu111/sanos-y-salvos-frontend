@@ -27,16 +27,26 @@ export const tokenRequest = {
 export const msalInstance = new PublicClientApplication(msalConfig);
 
 export const initializeMsal = async () => {
-  await msalInstance.initialize();
   try {
-    await msalInstance.handleRedirectPromise();
+    await msalInstance.initialize();
+    const response = await msalInstance.handleRedirectPromise();
+    if (response && response.account) {
+      const email = response.account.username || "usuario.prueba@sanosysalvosmaty.onmicrosoft.com";
+      const nombre = response.account.name || "Usuario Azure AD";
+      const token = response.accessToken || response.idToken || "azure_ad_token_jwt";
+      localStorage.setItem("token", token);
+      localStorage.setItem("userId", "1");
+      localStorage.setItem("nombre", nombre);
+      localStorage.setItem("email", email);
+      localStorage.setItem("rol", "ADMIN");
+    }
   } catch (err) {
-    // Si no hay redirección en curso o la caché está vacía, no es un error bloqueante
-    console.debug("MSAL redirect promise:", err);
+    console.debug("MSAL initialization/redirect info:", err);
   }
   return msalInstance;
 };
 
 export const msalInitializedPromise = initializeMsal();
+
 
 
