@@ -47,9 +47,10 @@ export function AuthProvider({ children }) {
       return;
     }
 
+    const storedUserId = localStorage.getItem("userId");
     setAuth({
       token,
-      userId: localStorage.getItem("userId"),
+      userId: storedUserId ? Number(storedUserId) : null,
       nombre: localStorage.getItem("nombre"),
       email: localStorage.getItem("email"),
       rol: localStorage.getItem("rol"),

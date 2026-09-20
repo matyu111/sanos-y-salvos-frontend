@@ -4,11 +4,11 @@ export const msalConfig = {
   auth: {
     clientId: "80f88177-c995-4f70-9bae-dd56af657969", // Id de cliente de la SPA en Azure
     authority: "https://login.microsoftonline.com/b96a854a-2ed8-4431-8c5a-3d20ba4a9194", // Tenant ID de Sanos y Salvos Cloud
-    redirectUri: "http://localhost:5173",
-    postLogoutRedirectUri: "http://localhost:5173",
+    redirectUri: window.location.origin,
+    postLogoutRedirectUri: window.location.origin,
   },
   cache: {
-    cacheLocation: "sessionStorage",
+    cacheLocation: "localStorage",
     storeAuthStateInCookie: false,
   },
 };
@@ -25,4 +25,12 @@ export const tokenRequest = {
 };
 
 export const msalInstance = new PublicClientApplication(msalConfig);
-export const msalInitializedPromise = msalInstance.initialize();
+
+export const initializeMsal = async () => {
+  await msalInstance.initialize();
+  await msalInstance.handleRedirectPromise();
+  return msalInstance;
+};
+
+export const msalInitializedPromise = initializeMsal();
+
