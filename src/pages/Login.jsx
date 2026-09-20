@@ -31,15 +31,19 @@ function Login() {
       const token = response.accessToken || response.idToken;
       const account = response.account;
 
+      const userRol = "ADMIN";
       auth.setSession({
         token: token,
         userId: 1,
         nombre: account?.name || account?.username || "Usuario Azure AD",
         email: account?.username || "usuario.prueba@sanosysalvosmaty.onmicrosoft.com",
-        rol: "ADMIN",
+        rol: userRol,
       });
 
-      navigate("/inicio", { replace: true });
+      console.log("Inicio de sesión exitoso con Azure AD (MSAL):", account);
+      console.log("JWT Bearer Token:", token);
+
+      navigate(userRol === "ADMIN" ? "/admin/dashboard" : "/inicio", { replace: true });
     } catch (err) {
       console.error("Error en login Azure AD:", err);
       if (err.errorCode === "interaction_in_progress") {
