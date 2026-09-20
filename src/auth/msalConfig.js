@@ -28,9 +28,15 @@ export const msalInstance = new PublicClientApplication(msalConfig);
 
 export const initializeMsal = async () => {
   await msalInstance.initialize();
-  await msalInstance.handleRedirectPromise();
+  try {
+    await msalInstance.handleRedirectPromise();
+  } catch (err) {
+    // Si no hay redirección en curso o la caché está vacía, no es un error bloqueante
+    console.debug("MSAL redirect promise:", err);
+  }
   return msalInstance;
 };
 
 export const msalInitializedPromise = initializeMsal();
+
 
