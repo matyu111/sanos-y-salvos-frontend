@@ -4,7 +4,7 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import { useAuth } from "../hooks/useAuth";
 import { loginUsuario } from "../services/authService";
-import { msalInstance, loginRequest } from "../auth/msalConfig";
+import { msalInstance, loginRequest, msalInitializedPromise } from "../auth/msalConfig";
 import "../styles/auth.css";
 
 function Login() {
@@ -23,7 +23,10 @@ function Login() {
     setError("");
     setCargando(true);
     try {
-      await msalInstance.initialize();
+      await msalInitializedPromise;
+      // Si había una interacción previa colgada, limpiamos el status
+      sessionStorage.clear();
+      
       const response = await msalInstance.loginPopup(loginRequest);
       const token = response.accessToken || response.idToken;
       const account = response.account;
@@ -31,15 +34,20 @@ function Login() {
       auth.setSession({
         token: token,
         userId: 1,
-        nombre: account.name || account.username || "Usuario Azure AD",
-        email: account.username || "usuario.prueba@sanosysalvosmaty.onmicrosoft.com",
+        nombre: account?.name || account?.username || "Usuario Azure AD",
+        email: account?.username || "usuario.prueba@sanosysalvosmaty.onmicrosoft.com",
         rol: "ADMIN",
       });
 
       navigate("/inicio", { replace: true });
     } catch (err) {
       console.error("Error en login Azure AD:", err);
-      setError("Error al iniciar sesión con Azure AD (MSAL): " + (err.message || ""));
+      if (err.errorCode === "interaction_in_progress") {
+        sessionStorage.clear();
+        setError("Había una ventana de inicio de sesión en progreso. Por favor haz clic de nuevo.");
+      } else {
+        setError("Error al iniciar sesión con Azure AD: " + (err.errorMessage || err.message || ""));
+      }
     } finally {
       setCargando(false);
     }

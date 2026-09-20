@@ -8,7 +8,7 @@ export const msalConfig = {
     postLogoutRedirectUri: "http://localhost:5173",
   },
   cache: {
-    cacheLocation: "localStorage",
+    cacheLocation: "sessionStorage",
     storeAuthStateInCookie: false,
   },
 };
@@ -24,3 +24,4 @@ export const loginRequest = {
 };
 
 export const msalInstance = new PublicClientApplication(msalConfig);
+export const msalInitializedPromise = msalInstance.initialize();
