@@ -19,38 +19,44 @@ function Login() {
     return <Navigate to={auth.rol === "ADMIN" ? "/admin/dashboard" : "/inicio"} replace />;
   }
 
-  const handleLoginAzureAD = async () => {
+  const handleLoginAzureAD = async (event) => {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
     setError("");
     setCargando(true);
     try {
       await msalInitializedPromise;
-      // Si había una interacción previa colgada, limpiamos el status
       sessionStorage.clear();
       
+      console.log("Iniciando popup de login de Microsoft Entra ID...");
       const response = await msalInstance.loginPopup(loginRequest);
+      console.log("Respuesta de Azure AD recibida:", response);
+
       const token = response.accessToken || response.idToken;
       const account = response.account;
 
       const userRol = "ADMIN";
-      auth.setSession({
+      const sessionData = {
         token: token,
         userId: 1,
         nombre: account?.name || account?.username || "Usuario Azure AD",
         email: account?.username || "usuario.prueba@sanosysalvosmaty.onmicrosoft.com",
         rol: userRol,
-      });
+      };
 
-      console.log("Inicio de sesión exitoso con Azure AD (MSAL):", account);
-      console.log("JWT Bearer Token:", token);
+      auth.setSession(sessionData);
+      console.log("Sesión establecida correctamente en AuthContext:", sessionData);
 
-      navigate(userRol === "ADMIN" ? "/admin/dashboard" : "/inicio", { replace: true });
+      navigate("/inicio", { replace: true });
     } catch (err) {
-      console.error("Error en login Azure AD:", err);
+      console.error("Error capturado en login Azure AD:", err);
       if (err.errorCode === "interaction_in_progress") {
         sessionStorage.clear();
         setError("Había una ventana de inicio de sesión en progreso. Por favor haz clic de nuevo.");
       } else {
-        setError("Error al iniciar sesión con Azure AD: " + (err.errorMessage || err.message || ""));
+        setError("Error al iniciar sesión con Azure AD: " + (err.errorMessage || err.message || JSON.stringify(err)));
       }
     } finally {
       setCargando(false);
